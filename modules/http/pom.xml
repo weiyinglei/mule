@@ -8,7 +8,7 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>mule-module-http</artifactId>
-    <packaging>jar</packaging>
+    <packaging>mule-service</packaging>
     <name>Mule HTTP Connector</name>
     <description>Provides components for exposing and consuming HTTP services</description>
 
@@ -17,6 +17,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.mule.services</groupId>
+            <artifactId>mule-service-http</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.mule</groupId>
             <artifactId>mule-core</artifactId>

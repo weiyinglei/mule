@@ -14,7 +14,6 @@ import org.mule.extension.http.api.request.authentication.NtlmAuthentication;
 import org.mule.extension.http.api.request.client.HttpClient;
 import org.mule.extension.http.api.request.proxy.DefaultProxyConfig;
 import org.mule.extension.http.api.request.proxy.NtlmProxyConfig;
-import org.mule.extension.http.api.request.proxy.ProxyConfig;
 import org.mule.extension.http.api.request.validator.FailureStatusCodeValidator;
 import org.mule.extension.http.api.request.validator.ResponseValidator;
 import org.mule.extension.http.api.request.validator.SuccessStatusCodeValidator;
@@ -29,6 +28,7 @@ import org.mule.runtime.extension.api.annotation.Import;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.SubTypeMapping;
 import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
+import org.mule.service.http.api.client.proxy.ProxyConfig;
 
 /**
  * HTTP connector used to handle and perform HTTP requests.

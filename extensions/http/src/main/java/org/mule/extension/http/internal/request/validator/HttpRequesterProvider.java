@@ -18,12 +18,8 @@ import static org.mule.runtime.extension.api.annotation.param.display.Placement.
 import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 import static org.mule.runtime.module.http.api.HttpConstants.Protocols.HTTP;
 import static org.mule.runtime.module.http.api.HttpConstants.Protocols.HTTPS;
-import org.mule.extension.http.api.request.authentication.HttpAuthentication;
-import org.mule.extension.http.api.request.client.HttpClient;
-import org.mule.extension.http.api.request.proxy.ProxyConfig;
 import org.mule.extension.http.internal.request.client.DefaultUriParameters;
-import org.mule.extension.http.internal.request.client.HttpClientConfiguration;
-import org.mule.extension.http.internal.request.client.HttpClientFactory;
+import org.mule.extension.http.internal.request.client.UriParametersHttpClient;
 import org.mule.extension.http.internal.request.grizzly.GrizzlyHttpClient;
 import org.mule.extension.socket.api.socket.tcp.TcpClientSocketProperties;
 import org.mule.runtime.api.connection.CachedConnectionProvider;
@@ -45,6 +41,10 @@ import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.module.http.api.HttpConstants;
 import org.mule.runtime.module.tls.api.DefaultTlsContextFactoryBuilder;
+import org.mule.service.http.api.client.HttpClient;
+import org.mule.service.http.api.client.HttpClientConfiguration;
+import org.mule.service.http.api.client.HttpClientFactory;
+import org.mule.service.http.api.client.proxy.ProxyConfig;
 
 import java.util.function.Function;
 
@@ -167,7 +167,31 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpClien
   private HttpClientFactory httpClientFactory;
 
   @Override
-  public ConnectionValidationResult validate(HttpClient httpClient) {
+  public HttpClient connect() throws ConnectionException {
+    String threadNamePrefix = String.format(THREAD_NAME_PREFIX_PATTERN, ThreadNameHelper.getPrefix(muleContext), configName);
+
+    HttpClientConfiguration configuration = new HttpClientConfiguration.Builder()
+        .setTlsContextFactory(tlsContextFactory)
+        .setProxyConfig(proxyConfig).setClientSocketProperties(clientSocketProperties).setMaxConnections(maxConnections)
+        .setUsePersistentConnections(usePersistentConnections).setConnectionIdleTimeout(connectionIdleTimeout)
+        .setThreadNamePrefix(threadNamePrefix).setOwnerName(configName).build();
+
+    HttpClient httpClient;
+    if (httpClientFactory == null) {
+      httpClient = new GrizzlyHttpClient(configuration);
+    } else {
+      httpClient = httpClientFactory.create(configuration);
+    }
+
+    UriParameters uriParameters = new DefaultUriParameters(protocol, host, port);
+    return new UriParametersHttpClient(httpClient, uriParameters);
+  }
+
+  @Override
+  public void disconnect(HttpClient httpClient) {}
+
+  @Override
+  public ConnectionValidationResult validate(UriParametersHttpClient httpClient) {
     return ConnectionValidationResult.success();
   }
 
@@ -248,4 +272,55 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpClien
   public HttpAuthentication getAuthentication() {
     return authentication;
   }
+
+
+  private class TcpClientSocketPropertiesAdapter implements org.mule.service.http.api.client.TcpClientSocketProperties {
+
+    TcpClientSocketProperties tcpClientSocketProperties;
+
+    public TcpClientSocketPropertiesAdapter(TcpClientSocketProperties tcpClientSocketProperties) {
+      this.tcpClientSocketProperties = tcpClientSocketProperties;
+    }
+
+    @Override
+    public Integer getSendBufferSize() {
+      return tcpClientSocketProperties.getSendBufferSize();
+    }
+
+    @Override
+    public Integer getReceiveBufferSize() {
+      return tcpClientSocketProperties.getReceiveBufferSize();
+    }
+
+    @Override
+    public Boolean getSendTcpNoDelay() {
+      return tcpClientSocketProperties.getSendTcpNoDelay();
+    }
+
+    @Override
+    public Integer getConnectionTimeout() {
+      return tcpClientSocketProperties.getConnectionTimeout();
+    }
+
+    @Override
+    public Integer getTimeout() {
+      return tcpClientSocketProperties.getConnectionTimeout();
+    }
+
+    @Override
+    public Integer getLinger() {
+      return tcpClientSocketProperties.getLinger();
+    }
+
+    @Override
+    public Boolean getKeepAlive() {
+      return tcpClientSocketProperties.getKeepAlive();
+    }
+
+    @Override
+    public Integer getClientTimeout() {
+      return tcpClientSocketProperties.getClientTimeout();
+    }
+  }
+
 }
