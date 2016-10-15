@@ -7,36 +7,28 @@
 package org.mule.extension.http.internal;
 
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
-import org.mule.extension.http.api.server.HttpListenerConnectionManager;
 import org.mule.extension.http.internal.request.grizzly.GrizzlyHttpClient;
+import org.mule.extension.http.internal.server.HttpListenerConnectionManager;
 import org.mule.runtime.core.api.lifecycle.Initialisable;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.service.http.api.HttpService;
 import org.mule.service.http.api.client.HttpClientFactory;
 import org.mule.service.http.api.server.HttpServerFactory;
 
-import javax.inject.Inject;
-
 public class HttpServiceImplementation implements HttpService, Initialisable {
 
-  private static final String OBJECT_HTTP_CLIENT_FACTORY = "_httpClientFactory";
-
-  @Inject
-  private HttpListenerConnectionManager connectionManager;
+  private final HttpListenerConnectionManager connectionManager = new HttpListenerConnectionManager();
 
   @Override
   public HttpServerFactory getServerFactory() {
+    //TODO: Create logic to make the manager able to distinguish apps (muleContext.getId() for now?)
     return connectionManager;
   }
 
   @Override
   public HttpClientFactory getClientFactory() {
-    //HttpClientFactory httpClientFactory = muleContext.getRegistry().get(OBJECT_HTTP_CLIENT_FACTORY);
-    //if (httpClientFactory == null) {
+    //DNS round robin should be achieve by using another client
     return GrizzlyHttpClient::new;
-    //} else {
-    //  return httpClientFactory;
-    //}
   }
 
   @Override

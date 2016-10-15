@@ -30,7 +30,7 @@ import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.exception.MessagingException;
-import org.mule.runtime.core.model.ParameterMap;
+import org.mule.service.http.api.domain.ParameterMap;
 import org.mule.runtime.core.util.StringUtils;
 import org.mule.runtime.module.http.internal.HttpParser;
 import org.mule.service.http.api.domain.entity.ByteArrayHttpEntity;

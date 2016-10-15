@@ -8,19 +8,18 @@ package org.mule.runtime.module.http.internal.listener.grizzly;
 
 import static org.mule.runtime.module.http.api.HttpHeaders.Names.CONTENT_LENGTH;
 import static org.mule.runtime.module.http.api.HttpHeaders.Names.CONTENT_TYPE;
-import org.mule.runtime.module.http.internal.domain.BaseHttpMessage;
 import org.mule.runtime.core.api.MuleRuntimeException;
-import org.mule.runtime.core.model.ParameterMap;
+import org.mule.service.http.api.domain.ParameterMap;
 import org.mule.runtime.core.util.StringUtils;
 import org.mule.runtime.module.http.internal.HttpParser;
-import org.mule.service.http.api.domain.HttpParameters;
+import org.mule.runtime.module.http.internal.domain.BaseHttpMessage;
+import org.mule.service.http.api.domain.HttpProtocol;
 import org.mule.service.http.api.domain.entity.EmptyHttpEntity;
 import org.mule.service.http.api.domain.entity.HttpEntity;
-import org.mule.service.http.api.domain.HttpProtocol;
 import org.mule.service.http.api.domain.entity.InputStreamHttpEntity;
+import org.mule.service.http.api.domain.entity.multipart.HttpPart;
 import org.mule.service.http.api.domain.entity.multipart.MultipartHttpEntity;
 import org.mule.service.http.api.domain.request.HttpRequest;
-import org.mule.service.http.api.domain.entity.multipart.HttpPart;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -149,7 +148,7 @@ public class GrizzlyHttpRequestAdapter extends BaseHttpMessage implements HttpRe
   }
 
   @Override
-  public HttpParameters getQueryParams() {
+  public ParameterMap getQueryParams() {
     if (queryParams == null) {
       queryParams = HttpParser.decodeQueryString(requestPacket.getQueryString());
     }

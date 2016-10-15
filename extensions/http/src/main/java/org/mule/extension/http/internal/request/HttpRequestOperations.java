@@ -19,7 +19,7 @@ import org.mule.extension.http.api.request.client.UriParameters;
 import org.mule.extension.http.api.request.validator.ResponseValidator;
 import org.mule.extension.http.api.request.validator.SuccessStatusCodeValidator;
 import org.mule.extension.http.internal.HttpConnector;
-import org.mule.extension.http.internal.request.client.UriParametersHttpClient;
+import org.mule.extension.http.internal.request.client.HttpExtensionClient;
 import org.mule.extension.http.internal.HttpMetadataResolver;
 import org.mule.extension.http.internal.request.validator.HttpRequesterConfig;
 import org.mule.runtime.core.api.Event;
@@ -97,10 +97,10 @@ public class HttpRequestOperations {
                                                                      order = 7) Integer responseTimeout,
                                                                  @Optional HttpRequesterRequestBuilder requestBuilder,
                                                                  @MetadataKeyId @Optional(
-                                                                   defaultValue = "ANY") @Placement(
-                                                                   tab = ADVANCED,
-                                                                   group = OTHER_SETTINGS) HttpMetadataKey outputType,
-                                                                 @Connection UriParametersHttpClient client,
+                                                                     defaultValue = "ANY") @Placement(
+                                                                         tab = ADVANCED,
+                                                                         group = OTHER_SETTINGS) HttpMetadataKey outputType,
+                                                                 @Connection HttpExtensionClient client,
                                                                  @UseConfig HttpRequesterConfig config, Event muleEvent)
       throws MuleException {
     HttpRequesterRequestBuilder resolvedBuilder = requestBuilder != null ? requestBuilder : new HttpRequesterRequestBuilder();

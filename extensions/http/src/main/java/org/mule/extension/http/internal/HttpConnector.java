@@ -11,13 +11,13 @@ import org.mule.extension.http.api.request.authentication.BasicAuthentication;
 import org.mule.extension.http.api.request.authentication.DigestAuthentication;
 import org.mule.extension.http.api.request.authentication.HttpAuthentication;
 import org.mule.extension.http.api.request.authentication.NtlmAuthentication;
-import org.mule.extension.http.api.request.client.HttpClient;
 import org.mule.extension.http.api.request.proxy.DefaultProxyConfig;
 import org.mule.extension.http.api.request.proxy.NtlmProxyConfig;
 import org.mule.extension.http.api.request.validator.FailureStatusCodeValidator;
 import org.mule.extension.http.api.request.validator.ResponseValidator;
 import org.mule.extension.http.api.request.validator.SuccessStatusCodeValidator;
 import org.mule.extension.http.internal.listener.server.HttpListenerConfig;
+import org.mule.extension.http.internal.request.client.HttpExtensionClient;
 import org.mule.extension.http.internal.request.validator.HttpRequesterConfig;
 import org.mule.extension.socket.api.socket.tcp.TcpClientSocketProperties;
 import org.mule.extension.socket.api.socket.tcp.TcpServerSocketProperties;
@@ -49,7 +49,7 @@ import org.mule.service.http.api.client.proxy.ProxyConfig;
 @Import(type = TcpClientSocketProperties.class, from = "Sockets")
 @Import(type = TcpServerSocketProperties.class, from = "Sockets")
 @Xml(namespaceLocation = "http://www.mulesoft.org/schema/mule/httpn", namespace = "httpn")
-@Export(classes = {HttpBasicAuthenticationFilter.class, HttpClient.class})
+@Export(classes = {HttpBasicAuthenticationFilter.class, HttpExtensionClient.class})
 public class HttpConnector {
 
   public static final String URL_CONFIGURATION = "URL Configuration";

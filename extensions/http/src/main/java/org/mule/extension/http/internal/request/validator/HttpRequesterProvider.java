@@ -6,20 +6,20 @@
  */
 package org.mule.extension.http.internal.request.validator;
 
-import static java.lang.String.format;
 import static org.mule.extension.http.internal.HttpConnector.AUTHENTICATION;
 import static org.mule.extension.http.internal.HttpConnector.TLS;
 import static org.mule.extension.http.internal.HttpConnector.TLS_CONFIGURATION;
+import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 import static org.mule.runtime.core.config.i18n.I18nMessageFactory.createStaticMessage;
-import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
 import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED;
 import static org.mule.runtime.extension.api.annotation.param.display.Placement.CONNECTION;
-import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 import static org.mule.runtime.module.http.api.HttpConstants.Protocols.HTTP;
 import static org.mule.runtime.module.http.api.HttpConstants.Protocols.HTTPS;
+import org.mule.extension.http.api.request.authentication.HttpAuthentication;
+import org.mule.extension.http.api.request.client.UriParameters;
 import org.mule.extension.http.internal.request.client.DefaultUriParameters;
-import org.mule.extension.http.internal.request.client.UriParametersHttpClient;
+import org.mule.extension.http.internal.request.client.HttpExtensionClient;
 import org.mule.extension.http.internal.request.grizzly.GrizzlyHttpClient;
 import org.mule.extension.socket.api.socket.tcp.TcpClientSocketProperties;
 import org.mule.runtime.api.connection.CachedConnectionProvider;
@@ -31,6 +31,7 @@ import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.lifecycle.Initialisable;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
+import org.mule.runtime.core.util.concurrent.ThreadNameHelper;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Parameter;
@@ -51,12 +52,12 @@ import java.util.function.Function;
 import javax.inject.Inject;
 
 /**
- * Connection provider for a HTTP request, handles the creation of {@link HttpClient} instances.
+ * Connection provider for a HTTP request, handles the creation of {@link HttpExtensionClient} instances.
  *
  * @since 4.0
  */
 @Alias("request")
-public class HttpRequesterProvider implements CachedConnectionProvider<HttpClient>, Initialisable {
+public class HttpRequesterProvider implements CachedConnectionProvider<HttpExtensionClient>, Initialisable {
 
   private static final int UNLIMITED_CONNECTIONS = -1;
   private static final String OBJECT_HTTP_CLIENT_FACTORY = "_httpClientFactory";
@@ -167,12 +168,12 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpClien
   private HttpClientFactory httpClientFactory;
 
   @Override
-  public HttpClient connect() throws ConnectionException {
+  public HttpExtensionClient connect() throws ConnectionException {
     String threadNamePrefix = String.format(THREAD_NAME_PREFIX_PATTERN, ThreadNameHelper.getPrefix(muleContext), configName);
 
     HttpClientConfiguration configuration = new HttpClientConfiguration.Builder()
-        .setTlsContextFactory(tlsContextFactory)
-        .setProxyConfig(proxyConfig).setClientSocketProperties(clientSocketProperties).setMaxConnections(maxConnections)
+        .setTlsContextFactory(tlsContextFactory).setProxyConfig(proxyConfig)
+        .setClientSocketProperties(new TcpClientSocketPropertiesAdapter(clientSocketProperties)).setMaxConnections(maxConnections)
         .setUsePersistentConnections(usePersistentConnections).setConnectionIdleTimeout(connectionIdleTimeout)
         .setThreadNamePrefix(threadNamePrefix).setOwnerName(configName).build();
 
@@ -184,14 +185,14 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpClien
     }
 
     UriParameters uriParameters = new DefaultUriParameters(protocol, host, port);
-    return new UriParametersHttpClient(httpClient, uriParameters);
+    return new HttpExtensionClient(httpClient, uriParameters, authentication);
   }
 
   @Override
-  public void disconnect(HttpClient httpClient) {}
+  public void disconnect(HttpExtensionClient httpClient) {}
 
   @Override
-  public ConnectionValidationResult validate(UriParametersHttpClient httpClient) {
+  public ConnectionValidationResult validate(HttpExtensionClient httpClient) {
     return ConnectionValidationResult.success();
   }
 
@@ -233,29 +234,6 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpClien
       connectionIdleTimeout = 0;
     }
   }
-
-  @Override
-  public HttpClient connect() throws ConnectionException {
-    String threadNamePrefix = format(THREAD_NAME_PREFIX_PATTERN, getPrefix(muleContext), configName);
-
-    HttpClientConfiguration configuration = new HttpClientConfiguration.Builder()
-        .setUriParameters(new DefaultUriParameters(protocol, host, port)).setAuthentication(authentication)
-        .setTlsContextFactory(tlsContextFactory).setProxyConfig(proxyConfig).setClientSocketProperties(clientSocketProperties)
-        .setMaxConnections(maxConnections).setUsePersistentConnections(usePersistentConnections)
-        .setConnectionIdleTimeout(connectionIdleTimeout).setThreadNamePrefix(threadNamePrefix).setOwnerName(configName).build();
-
-    HttpClient httpClient;
-    if (httpClientFactory == null) {
-      httpClient = new GrizzlyHttpClient(configuration);
-    } else {
-      httpClient = httpClientFactory.create(configuration);
-    }
-
-    return httpClient;
-  }
-
-  @Override
-  public void disconnect(HttpClient httpClient) {}
 
   public Function<Event, Integer> getPort() {
     return port;

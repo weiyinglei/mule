@@ -6,8 +6,8 @@
  */
 package org.mule.service.http.api.domain.request;
 
+import org.mule.runtime.api.util.MultiMap;
 import org.mule.service.http.api.domain.HttpMessage;
-import org.mule.service.http.api.domain.HttpParameters;
 import org.mule.service.http.api.domain.HttpProtocol;
 import org.mule.service.http.api.domain.entity.InputStreamHttpEntity;
 
@@ -33,7 +33,7 @@ public interface HttpRequest extends HttpMessage {
    */
   String getUri();
 
-  HttpParameters getQueryParams();
+  MultiMap<String, String> getQueryParams();
 
   /**
    * @return the raw input stream from the body. if there's not body then returns null. After calling this method #getEntity

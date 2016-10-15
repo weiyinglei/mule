@@ -610,6 +610,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.mule</groupId>
+            <artifactId>mule-service-http</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mule.modules</groupId>
             <artifactId>mule-module-http-ext</artifactId>
             <version>${project.version}</version>

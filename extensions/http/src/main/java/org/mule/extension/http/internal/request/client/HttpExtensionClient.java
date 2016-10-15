@@ -6,7 +6,13 @@
  */
 package org.mule.extension.http.internal.request.client;
 
+import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.startIfNeeded;
+import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.stopIfNeeded;
+import org.mule.extension.http.api.request.authentication.HttpAuthentication;
 import org.mule.extension.http.api.request.client.UriParameters;
+import org.mule.runtime.core.api.MuleException;
+import org.mule.runtime.core.api.lifecycle.Startable;
+import org.mule.runtime.core.api.lifecycle.Stoppable;
 import org.mule.service.http.api.client.HttpClient;
 import org.mule.service.http.api.client.HttpRequestAuthentication;
 import org.mule.service.http.api.domain.request.HttpRequest;
@@ -18,14 +24,16 @@ import java.util.concurrent.TimeoutException;
 /**
  *
  */
-public class UriParametersHttpClient implements org.mule.service.http.api.client.HttpClient {
+public class HttpExtensionClient implements Startable, Stoppable {
 
-  private HttpClient httpClient;
-  private UriParameters uriParameters;
+  private final HttpAuthentication authentication;
+  private final HttpClient httpClient;
+  private final UriParameters uriParameters;
 
-  public UriParametersHttpClient(HttpClient httpClient, UriParameters uriParameters) {
+  public HttpExtensionClient(HttpClient httpClient, UriParameters uriParameters, HttpAuthentication authentication) {
     this.httpClient = httpClient;
     this.uriParameters = uriParameters;
+    this.authentication = authentication;
   }
 
   /**
@@ -35,17 +43,22 @@ public class UriParametersHttpClient implements org.mule.service.http.api.client
     return uriParameters;
   }
 
+  public HttpAuthentication getDefaultAuthentication() {
+    return authentication;
+  }
+
   @Override
-  public void start() {
+  public void stop() throws MuleException {
+    startIfNeeded(authentication);
     httpClient.start();
   }
 
   @Override
-  public void stop() {
+  public void start() throws MuleException {
     httpClient.stop();
+    stopIfNeeded(authentication);
   }
 
-  @Override
   public HttpResponse send(HttpRequest request, int responseTimeout, boolean followRedirects,
                            HttpRequestAuthentication authentication)
       throws IOException, TimeoutException {

@@ -16,16 +16,16 @@ import org.mule.extension.http.api.request.authentication.UsernamePasswordAuthen
 import org.mule.extension.http.api.request.builder.HttpRequesterRequestBuilder;
 import org.mule.extension.http.api.request.client.UriParameters;
 import org.mule.extension.http.api.request.validator.ResponseValidator;
-import org.mule.extension.http.internal.request.client.UriParametersHttpClient;
+import org.mule.extension.http.internal.request.client.HttpExtensionClient;
 import org.mule.extension.http.internal.request.validator.HttpRequesterConfig;
 import org.mule.runtime.api.message.Message;
+import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.api.MuleRuntimeException;
-import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.context.notification.ConnectorMessageNotification;
 import org.mule.runtime.core.context.notification.NotificationHelper;
@@ -73,8 +73,8 @@ public class HttpRequester {
         new NotificationHelper(config.getMuleContext().getNotificationManager(), ConnectorMessageNotification.class, false);
   }
 
-  public Message doRequest(Event muleEvent, UriParametersHttpClient client, HttpRequesterRequestBuilder requestBuilder,
-                               boolean checkRetry)
+  public Message doRequest(Event muleEvent, HttpExtensionClient client, HttpRequesterRequestBuilder requestBuilder,
+                           boolean checkRetry, MuleContext muleContext, FlowConstruct flowConstruct)
       throws MuleException {
     HttpRequest httpRequest = eventToHttpRequest.create(muleEvent, requestBuilder, authentication, muleContext);
 

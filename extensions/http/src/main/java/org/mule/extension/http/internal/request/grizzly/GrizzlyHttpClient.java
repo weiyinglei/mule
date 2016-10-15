@@ -7,17 +7,12 @@
 package org.mule.extension.http.internal.request.grizzly;
 
 import static com.ning.http.client.Realm.AuthScheme.NTLM;
-import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.startIfNeeded;
-import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.stopIfNeeded;
 import static org.mule.runtime.module.http.api.HttpHeaders.Names.CONNECTION;
 import static org.mule.runtime.module.http.api.HttpHeaders.Values.CLOSE;
-import org.mule.extension.http.api.request.authentication.HttpAuthentication;
-import org.mule.extension.http.api.request.client.UriParameters;
 import org.mule.extension.http.api.request.proxy.NtlmProxyConfig;
 import org.mule.extension.http.internal.request.DefaultHttpRequest;
 import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.runtime.api.tls.TlsContextTrustStoreConfiguration;
-import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.api.MuleRuntimeException;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.util.IOUtils;
@@ -96,8 +91,7 @@ public class GrizzlyHttpClient implements HttpClient {
   }
 
   @Override
-  public void start() throws MuleException {
-    startIfNeeded(authentication);
+  public void start() {
     AsyncHttpClientConfig.Builder builder = new AsyncHttpClientConfig.Builder();
     builder.setAllowPoolingConnections(true);
 
@@ -355,8 +349,7 @@ public class GrizzlyHttpClient implements HttpClient {
   }
 
   @Override
-  public void stop() throws MuleException {
-    stopIfNeeded(authentication);
+  public void stop() {
     asyncHttpClient.close();
   }
 }

@@ -26,7 +26,7 @@ import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.config.i18n.I18nMessageFactory;
 import org.mule.runtime.core.exception.MessagingException;
-import org.mule.runtime.core.model.ParameterMap;
+import org.mule.service.http.api.domain.ParameterMap;
 import org.mule.runtime.core.util.IOUtils;
 import org.mule.runtime.core.util.UUID;
 import org.mule.runtime.module.http.api.HttpHeaders;
