@@ -41,7 +41,6 @@ public abstract class AbstractScriptConfigBuilderTestCase extends MuleArtifactFu
   }
 
   @Test
-  @Ignore("MULE-10724")
   public void testTransformerConfig() {
     Transformer t = muleContext.getRegistry().lookupTransformer("TestCompressionTransformer");
     assertNotNull(t);

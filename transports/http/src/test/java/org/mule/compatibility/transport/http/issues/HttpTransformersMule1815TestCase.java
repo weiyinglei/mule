@@ -18,7 +18,6 @@ import org.mule.runtime.core.api.client.MuleClient;
 import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.tck.junit4.rule.DynamicPort;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -77,7 +76,6 @@ public class HttpTransformersMule1815TestCase extends CompatibilityFunctionalTes
    * @throws Exception
    */
   @Test
-  @Ignore("MULE-10724")
   public void testIgnored() throws Exception {
     assertThat(getPayloadAsString(sendTo("ignored")), is(OUTBOUND_MESSAGE + " transformed" + " transformed 2" + " Received"));
   }
@@ -88,7 +86,6 @@ public class HttpTransformersMule1815TestCase extends CompatibilityFunctionalTes
    * @throws Exception
    */
   @Test
-  @Ignore("MULE-10724")
   public void testInbound() throws Exception {
     assertEquals(
                  // this reads backwards - innermost is first in chain

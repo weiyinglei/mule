@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ResponseTransformerScenariosTestCase extends CompatibilityFunctionalTestCase {
@@ -62,7 +61,6 @@ public class ResponseTransformerScenariosTestCase extends CompatibilityFunctiona
   }
 
   @Test
-  @Ignore("MULE-10724")
   public void testVmSyncResponseTransformer() throws Exception {
     MuleClient client = muleContext.getClient();
 
@@ -76,7 +74,6 @@ public class ResponseTransformerScenariosTestCase extends CompatibilityFunctiona
   }
 
   @Test
-  @Ignore("MULE-10724")
   public void testVmSyncOutboundEndpointResponseTransformer() throws Exception {
     MuleClient client = muleContext.getClient();
     InternalMessage message = client.send("vm://syncOutboundEndpointResponseTransformer", "request", null).getRight();
@@ -95,7 +92,6 @@ public class ResponseTransformerScenariosTestCase extends CompatibilityFunctiona
   }
 
   @Test
-  @Ignore("MULE-10724")
   public void testJmsSyncOutboundEndpointResponseTransformer() throws Exception {
     MuleClient client = muleContext.getClient();
     InternalMessage message = client.send("vm://jmsSyncOutboundEndpointResponseTransformer", "request", null).getRight();
@@ -104,7 +100,6 @@ public class ResponseTransformerScenariosTestCase extends CompatibilityFunctiona
   }
 
   @Test
-  @Ignore("MULE-10724")
   public void testChainedRouterOutboundEndpointResponseTransformer() throws Exception {
     MuleClient client = muleContext.getClient();
     InternalMessage message = client.send("vm://chainedRouterOutboundEndpointResponseTransformer", "request", null).getRight();
@@ -114,7 +109,6 @@ public class ResponseTransformerScenariosTestCase extends CompatibilityFunctiona
   }
 
   @Test
-  @Ignore("MULE-10724")
   public void testNestedRouterOutboundEndpointResponseTransformer() throws Exception {
     MuleClient client = muleContext.getClient();
     InternalMessage message = client.send("vm://nestedRouterOutboundEndpointResponseTransformer", "request", null).getRight();
