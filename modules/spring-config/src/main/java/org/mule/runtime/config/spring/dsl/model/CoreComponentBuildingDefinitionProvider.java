@@ -977,6 +977,7 @@ public class CoreComponentBuildingDefinitionProvider implements ComponentBuildin
                                        fromMultipleDefinitions(addAll(commonTransformerParameters, configurationAttributes))
                                            .build())
         .asPrototype()
+        .asNamed()
         .copy();
   }
 
