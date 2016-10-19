@@ -42,6 +42,7 @@ import org.mule.runtime.core.routing.requestreply.AsyncReplyToPropertyRequestRep
 import java.util.Optional;
 
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
 
 /**
  * This implementation of {@link AbstractPipeline} adds the following functionality:
@@ -72,35 +73,23 @@ public class Flow extends AbstractPipeline implements Processor, StageNameSource
   }
 
   @Override
-  protected void doStart() throws MuleException {
-    if (processingStrategy instanceof NonBlockingProcessingStrategy) {
-      ((NonBlockingProcessingStrategy) processingStrategy).start();
-    }
-    super.doStart();
-  }
-
-  @Override
-  protected void doStop() throws MuleException {
-    super.doStop();
-    if (processingStrategy instanceof NonBlockingProcessingStrategy) {
-      ((NonBlockingProcessingStrategy) processingStrategy).stop();
-    }
-  }
-
-  @Override
   public Event process(final Event event) throws MuleException {
-    final Event newEvent = createMuleEventForCurrentFlow(event, event.getReplyToDestination(), event.getReplyToHandler());
-    try {
-      ExecutionTemplate<Event> executionTemplate =
-          createErrorHandlingExecutionTemplate(muleContext, this, getExceptionListener());
-      Event result = executionTemplate.execute(() -> pipeline.process(newEvent));
-      return createReturnEventForParentFlowConstruct(result, event);
-    } catch (MessagingException e) {
-      e.setProcessedEvent(createReturnEventForParentFlowConstruct(e.getEvent(), event));
-      throw e;
-    } catch (Exception e) {
-      resetRequestContextEvent(event);
-      throw new DefaultMuleException(CoreMessages.createStaticMessage("Flow execution exception"), e);
+    if (event.isSynchronous() || isSynchronous()) {
+      final Event newEvent = createMuleEventForCurrentFlow(event, event.getReplyToDestination(), event.getReplyToHandler());
+      try {
+        ExecutionTemplate<Event> executionTemplate =
+            createErrorHandlingExecutionTemplate(muleContext, this, getExceptionListener());
+        Event result = executionTemplate.execute(() -> pipeline.process(newEvent));
+        return createReturnEventForParentFlowConstruct(result, event);
+      } catch (MessagingException e) {
+        e.setProcessedEvent(createReturnEventForParentFlowConstruct(e.getEvent(), event));
+        throw e;
+      } catch (Exception e) {
+        resetRequestContextEvent(event);
+        throw new DefaultMuleException(CoreMessages.createStaticMessage("Flow execution exception"), e);
+      }
+    } else {
+      return Mono.from(apply(Mono.just(event))).blockMillis(muleContext.getConfiguration().getDefaultResponseTimeout());
     }
   }
 
@@ -109,11 +98,11 @@ public class Flow extends AbstractPipeline implements Processor, StageNameSource
     if (isSynchronous()) {
       return Processor.super.apply(publisher);
     } else {
-      return from(publisher).concatMap(event -> just(event)
+      return from(publisher).transform(processingStrategy.onPipeline(this, stream -> from(stream).concatMap(event -> just(event)
           .map(request -> createMuleEventForCurrentFlow(request, request.getReplyToDestination(), request.getReplyToHandler()))
           .transform(pipeline)
           .onErrorResumeWith(MessagingException.class, getExceptionListener())
-          .map(respone -> createReturnEventForParentFlowConstruct(respone, event)));
+          .map(respone -> createReturnEventForParentFlowConstruct(respone, event)))));
     }
   }
 

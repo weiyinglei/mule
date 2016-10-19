@@ -12,6 +12,7 @@ import static org.mule.runtime.core.context.notification.PipelineMessageNotifica
 import static org.mule.runtime.core.context.notification.PipelineMessageNotification.PROCESS_END;
 import static org.mule.runtime.core.context.notification.PipelineMessageNotification.PROCESS_START;
 import static org.mule.runtime.core.util.NotificationUtils.buildPathResolver;
+import static reactor.core.publisher.Flux.from;
 
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.Event;
@@ -45,6 +46,7 @@ import org.mule.runtime.core.processor.AbstractInterceptingMessageProcessor;
 import org.mule.runtime.core.processor.AbstractRequestResponseMessageProcessor;
 import org.mule.runtime.core.processor.IdempotentRedeliveryPolicy;
 import org.mule.runtime.core.processor.chain.DefaultMessageProcessorChainBuilder;
+import org.mule.runtime.core.processor.strategy.AbstractThreadingProfileProcessingStrategy;
 import org.mule.runtime.core.processor.strategy.AsynchronousProcessingStrategyFactory;
 import org.mule.runtime.core.processor.strategy.DefaultFlowProcessingStrategyFactory;
 import org.mule.runtime.core.processor.strategy.NonBlockingProcessingStrategyFactory;
@@ -58,6 +60,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.collections.Predicate;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
 
 /**
  * Abstract implementation of {@link AbstractFlowConstruct} that allows a list of {@link Processor}s that will be used to process
@@ -208,7 +212,17 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
 
         @Override
         public Event process(Event event) throws MuleException {
-          return pipeline.process(event);
+          if (event.isSynchronous() || isSynchronous()) {
+            return pipeline.process(event);
+          } else {
+            return Mono.from(apply(Mono.just(event)))
+                .blockMillis(AbstractPipeline.this.getMuleContext().getConfiguration().getDefaultResponseTimeout());
+          }
+        }
+
+        @Override
+        public Publisher<Event> apply(Publisher<Event> publisher) {
+          return from(publisher).transform(processingStrategy.onPipeline(AbstractPipeline.this, pipeline));
         }
       });
     }
@@ -274,6 +288,9 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
   @Override
   protected void doStart() throws MuleException {
     super.doStart();
+    if (processingStrategy instanceof AbstractThreadingProfileProcessingStrategy) {
+      ((AbstractThreadingProfileProcessingStrategy) processingStrategy).start();
+    }
     startIfStartable(pipeline);
     canProcessMessage = true;
     try {
@@ -353,6 +370,9 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
     }
 
     stopIfStoppable(pipeline);
+    if (processingStrategy instanceof AsynchronousProcessingStrategy) {
+      ((AsynchronousProcessingStrategy) processingStrategy).stop();
+    }
     super.doStop();
   }
 

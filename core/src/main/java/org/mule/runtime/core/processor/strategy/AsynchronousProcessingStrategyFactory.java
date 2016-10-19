@@ -6,16 +6,24 @@
  */
 package org.mule.runtime.core.processor.strategy;
 
+import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.construct.Pipeline;
 import org.mule.runtime.core.api.processor.MessageProcessorChainBuilder;
 import org.mule.runtime.core.api.processor.Processor;
+import org.mule.runtime.core.api.processor.StageNameSource;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategyFactory;
 import org.mule.runtime.core.processor.AsyncInterceptingMessageProcessor;
 
 import java.util.List;
+import java.util.function.Function;
 
 import javax.resource.spi.work.WorkManager;
+
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * This factory's strategy uses a {@link WorkManager} to schedule the processing of the pipeline of message processors in a single
@@ -109,8 +117,7 @@ public class AsynchronousProcessingStrategyFactory implements ProcessingStrategy
     protected ProcessingStrategy synchronousProcessingStrategy = new SynchronousProcessingStrategyFactory().create();
 
     @Override
-    public void configureProcessors(List<Processor> processors,
-                                    org.mule.runtime.core.api.processor.StageNameSource nameSource,
+    public void configureProcessors(List<Processor> processors, StageNameSource nameSource,
                                     MessageProcessorChainBuilder chainBuilder, MuleContext muleContext) {
       if (processors.size() > 0) {
         chainBuilder.chain(createAsyncMessageProcessor(nameSource, muleContext));
@@ -118,11 +125,18 @@ public class AsynchronousProcessingStrategyFactory implements ProcessingStrategy
       }
     }
 
-    protected AsyncInterceptingMessageProcessor createAsyncMessageProcessor(org.mule.runtime.core.api.processor.StageNameSource nameSource,
+    protected AsyncInterceptingMessageProcessor createAsyncMessageProcessor(StageNameSource nameSource,
                                                                             MuleContext muleContext) {
       return new AsyncInterceptingMessageProcessor(createThreadingProfile(muleContext),
                                                    getThreadPoolName(nameSource.getName(), muleContext),
                                                    muleContext.getConfiguration().getShutdownTimeout());
+    }
+
+    @Override
+    public Function<Publisher<Event>, Publisher<Event>> onPipeline(Pipeline pipeline,
+                                                                   Function<Publisher<Event>, Publisher<Event>> publisherFunction) {
+      return publisher -> Flux.from(publisher).publishOn(Schedulers.fromExecutorService(getExecutorService()))
+          .transform(publisherFunction);
     }
 
   }

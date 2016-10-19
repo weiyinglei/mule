@@ -6,18 +6,25 @@
  */
 package org.mule.runtime.core.processor.strategy;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.mule.runtime.core.api.config.ThreadingProfile.DEFAULT_MAX_THREADS_ACTIVE;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ThreadingProfile;
+import org.mule.runtime.core.api.lifecycle.Startable;
+import org.mule.runtime.core.api.lifecycle.Stoppable;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
 import org.mule.runtime.core.config.ChainedThreadingProfile;
 import org.mule.runtime.core.util.concurrent.ThreadNameHelper;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * A abstract {@link org.mule.runtime.core.api.processor.strategy.ProcessingStrategy} implementation that provides a
  * {@link org.mule.runtime.core.api.config.ThreadingProfile} for you in extensions configured via setters for each of the
  * threading profile attributes.
  */
-public abstract class AbstractThreadingProfileProcessingStrategy implements ProcessingStrategy {
+public abstract class AbstractThreadingProfileProcessingStrategy implements ProcessingStrategy, Startable, Stoppable {
 
   protected Integer maxThreads;
   protected Integer minThreads;
@@ -25,6 +32,13 @@ public abstract class AbstractThreadingProfileProcessingStrategy implements Proc
   protected Long threadTTL;
   protected Long threadWaitTimeout;
   protected Integer poolExhaustedAction;
+  private ExecutorService executorService;
+
+  public AbstractThreadingProfileProcessingStrategy() {}
+
+  public AbstractThreadingProfileProcessingStrategy(ExecutorService executorService) {
+    this.executorService = executorService;
+  }
 
   protected ThreadingProfile createThreadingProfile(MuleContext muleContext) {
     ThreadingProfile threadingProfile = new ChainedThreadingProfile(muleContext.getDefaultThreadingProfile());
@@ -102,4 +116,19 @@ public abstract class AbstractThreadingProfileProcessingStrategy implements Proc
     return poolExhaustedAction;
   }
 
+  @Override
+  public void start() throws MuleException {
+    executorService = newFixedThreadPool(maxThreads != null ? maxThreads : DEFAULT_MAX_THREADS_ACTIVE);
+  }
+
+  @Override
+  public void stop() throws MuleException {
+    if (executorService != null) {
+      executorService.shutdown();
+    }
+  }
+
+  protected ExecutorService getExecutorService() {
+    return this.executorService;
+  }
 }

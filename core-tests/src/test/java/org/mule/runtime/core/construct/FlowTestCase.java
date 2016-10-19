@@ -23,9 +23,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import static org.mule.runtime.core.MessageExchangePattern.ONE_WAY;
-
-import org.mule.runtime.core.api.Event;
 import org.mule.runtime.api.exception.MuleException;
+import org.mule.runtime.api.i18n.I18nMessage;
+import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.lifecycle.LifecycleException;
 import org.mule.runtime.core.api.lifecycle.Startable;
 import org.mule.runtime.core.api.lifecycle.Stoppable;
@@ -33,7 +33,6 @@ import org.mule.runtime.core.api.message.InternalMessage;
 import org.mule.runtime.core.api.processor.MessageProcessorPathElement;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.source.MessageSource;
-import org.mule.runtime.api.i18n.I18nMessage;
 import org.mule.runtime.core.processor.ResponseMessageProcessorAdapter;
 import org.mule.runtime.core.processor.chain.DynamicMessageProcessorContainer;
 import org.mule.runtime.core.transformer.simple.StringAppendTransformer;
@@ -48,6 +47,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Test;
+import org.reactivestreams.Publisher;
 
 public class FlowTestCase extends AbstractFlowConstuctTestCase {
 
@@ -69,8 +69,13 @@ public class FlowTestCase extends AbstractFlowConstuctTestCase {
     dynamicProcessorContainer = mock(DynamicMessageProcessorContainer.class);
     when(dynamicProcessorContainer.process(any(Event.class))).then(invocation -> {
       Object[] args = invocation.getArguments();
-      return (Event) args[0];
+      return args[0];
     });
+    when(dynamicProcessorContainer.apply(any(Publisher.class))).then(invocation -> {
+      Object[] args = invocation.getArguments();
+      return args[0];
+    });
+
     doAnswer(invocation -> ((MessageProcessorPathElement) invocation.getArguments()[0]).addChild(dynamicProcessorContainer))
         .when(dynamicProcessorContainer).addMessageProcessorPathElements(any(MessageProcessorPathElement.class));
     List<Processor> processors = new ArrayList<>();
