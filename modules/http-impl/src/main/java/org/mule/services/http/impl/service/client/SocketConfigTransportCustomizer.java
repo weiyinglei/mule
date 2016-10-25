@@ -4,11 +4,11 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.extension.http.internal.request.grizzly;
+package org.mule.services.http.impl.service.client;
 
 
 
-import org.mule.service.http.api.client.TcpClientSocketProperties;
+import org.mule.service.http.api.tcp.TcpClientSocketProperties;
 
 import com.ning.http.client.providers.grizzly.TransportCustomizer;
 

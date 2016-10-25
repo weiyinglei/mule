@@ -4,22 +4,17 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.extension.http.internal.server;
+package org.mule.services.http.impl.service.server;
 
 
-import org.mule.extension.http.internal.listener.grizzly.GrizzlyServerManager;
-import org.mule.extension.socket.api.socket.tcp.TcpServerSocketProperties;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.tls.TlsContextFactory;
-import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleRuntimeException;
-import org.mule.runtime.core.api.context.MuleContextAware;
 import org.mule.runtime.core.api.lifecycle.Disposable;
 import org.mule.runtime.core.api.lifecycle.Initialisable;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.util.NetworkUtils;
-import org.mule.runtime.core.util.concurrent.ThreadNameHelper;
 import org.mule.runtime.module.http.internal.listener.DefaultServerAddress;
 import org.mule.runtime.module.http.internal.listener.HttpListenerRegistry;
 import org.mule.runtime.module.http.internal.listener.HttpServerManager;
@@ -27,12 +22,11 @@ import org.mule.service.http.api.server.HttpServer;
 import org.mule.service.http.api.server.HttpServerConfiguration;
 import org.mule.service.http.api.server.HttpServerFactory;
 import org.mule.service.http.api.server.ServerAddress;
-
-import com.google.common.collect.Iterables;
+import org.mule.service.http.api.tcp.TcpServerSocketProperties;
+import org.mule.services.http.impl.service.server.grizzly.GrizzlyServerManager;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -40,9 +34,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @since 4.0
  */
-public class HttpListenerConnectionManager implements HttpServerFactory, Initialisable, Disposable, MuleContextAware {
+public class HttpListenerConnectionManager implements HttpServerFactory, Initialisable, Disposable {
 
-  public static final String HTTP_LISTENER_CONNECTION_MANAGER = "_httpExtListenerConnectionManager";
   public static final String SERVER_ALREADY_EXISTS_FORMAT =
       "A server in port(%s) already exists for ip(%s) or one overlapping it (0.0.0.0).";
   private static final String LISTENER_THREAD_NAME_PREFIX = "http.listener";
@@ -50,7 +43,6 @@ public class HttpListenerConnectionManager implements HttpServerFactory, Initial
   private HttpListenerRegistry httpListenerRegistry = new HttpListenerRegistry();
   private HttpServerManager httpServerManager;
 
-  private MuleContext muleContext;
   private AtomicBoolean initialized = new AtomicBoolean(false);
 
   @Override
@@ -59,18 +51,10 @@ public class HttpListenerConnectionManager implements HttpServerFactory, Initial
       return;
     }
 
-    Collection<TcpServerSocketProperties> tcpServerSocketPropertiesBeans =
-        muleContext.getRegistry().lookupObjects(TcpServerSocketProperties.class);
-    TcpServerSocketProperties tcpServerSocketProperties = new TcpServerSocketProperties();
+    //TODO: Analyze how to allow users to configure this
+    TcpServerSocketProperties tcpServerSocketProperties = new DefaultTcpServerSocketProperties();
 
-    if (tcpServerSocketPropertiesBeans.size() == 1) {
-      tcpServerSocketProperties = Iterables.getOnlyElement(tcpServerSocketPropertiesBeans);
-    } else if (tcpServerSocketPropertiesBeans.size() > 1) {
-      throw new InitialisationException(CoreMessages
-          .createStaticMessage("Only one global TCP server socket properties bean should be defined in the config"), this);
-    }
-
-    String threadNamePrefix = ThreadNameHelper.getPrefix(muleContext) + LISTENER_THREAD_NAME_PREFIX;
+    String threadNamePrefix = LISTENER_THREAD_NAME_PREFIX;
     try {
       httpServerManager = new GrizzlyServerManager(threadNamePrefix, httpListenerRegistry, tcpServerSocketProperties);
     } catch (IOException e) {
@@ -82,11 +66,6 @@ public class HttpListenerConnectionManager implements HttpServerFactory, Initial
   @Override
   public synchronized void dispose() {
     httpServerManager.dispose();
-  }
-
-  @Override
-  public void setMuleContext(MuleContext muleContext) {
-    this.muleContext = muleContext;
   }
 
   @Override
@@ -149,6 +128,54 @@ public class HttpListenerConnectionManager implements HttpServerFactory, Initial
    */
   private ServerAddress createServerAddress(String host, int port) throws UnknownHostException {
     return new DefaultServerAddress(NetworkUtils.getLocalHostIp(host), port);
+  }
+
+  private class DefaultTcpServerSocketProperties implements TcpServerSocketProperties {
+
+    @Override
+    public Integer getSendBufferSize() {
+      return null;
+    }
+
+    @Override
+    public Integer getReceiveBufferSize() {
+      return null;
+    }
+
+    @Override
+    public Integer getClientTimeout() {
+      return null;
+    }
+
+    @Override
+    public Boolean getSendTcpNoDelay() {
+      return true;
+    }
+
+    @Override
+    public Integer getLinger() {
+      return null;
+    }
+
+    @Override
+    public Boolean getKeepAlive() {
+      return false;
+    }
+
+    @Override
+    public Boolean getReuseAddress() {
+      return true;
+    }
+
+    @Override
+    public Integer getReceiveBacklog() {
+      return 50;
+    }
+
+    @Override
+    public Integer getServerTimeout() {
+      return null;
+    }
   }
 
 }

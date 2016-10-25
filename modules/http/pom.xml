@@ -8,7 +8,7 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>mule-module-http</artifactId>
-    <packaging>mule-service</packaging>
+    <packaging>jar</packaging>
     <name>Mule HTTP Connector</name>
     <description>Provides components for exposing and consuming HTTP services</description>
 

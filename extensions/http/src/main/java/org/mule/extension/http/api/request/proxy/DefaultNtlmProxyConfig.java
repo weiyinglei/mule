@@ -9,6 +9,7 @@ package org.mule.extension.http.api.request.proxy;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.service.http.api.client.proxy.NtlmProxyConfig;
 
 /**
  * A Proxy configuration for NTLM authentication proxies.
@@ -16,7 +17,7 @@ import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
  * @since 4.0
  */
 @Alias("ntlm-proxy")
-public class NtlmProxyConfig extends DefaultProxyConfig {
+public class DefaultNtlmProxyConfig extends DefaultProxyConfig implements NtlmProxyConfig {
 
   /**
    * The domain to authenticate against the proxy.

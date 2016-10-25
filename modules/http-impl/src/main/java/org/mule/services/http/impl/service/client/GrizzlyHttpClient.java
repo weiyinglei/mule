@@ -4,13 +4,11 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.extension.http.internal.request.grizzly;
+package org.mule.services.http.impl.service.client;
 
 import static com.ning.http.client.Realm.AuthScheme.NTLM;
 import static org.mule.runtime.module.http.api.HttpHeaders.Names.CONNECTION;
 import static org.mule.runtime.module.http.api.HttpHeaders.Values.CLOSE;
-import org.mule.extension.http.api.request.proxy.NtlmProxyConfig;
-import org.mule.extension.http.internal.request.DefaultHttpRequest;
 import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.runtime.api.tls.TlsContextTrustStoreConfiguration;
 import org.mule.runtime.core.api.MuleRuntimeException;
@@ -26,7 +24,7 @@ import org.mule.service.http.api.client.HttpAuthenticationType;
 import org.mule.service.http.api.client.HttpClient;
 import org.mule.service.http.api.client.HttpClientConfiguration;
 import org.mule.service.http.api.client.HttpRequestAuthentication;
-import org.mule.service.http.api.client.TcpClientSocketProperties;
+import org.mule.service.http.api.client.proxy.NtlmProxyConfig;
 import org.mule.service.http.api.client.proxy.ProxyConfig;
 import org.mule.service.http.api.domain.entity.ByteArrayHttpEntity;
 import org.mule.service.http.api.domain.entity.InputStreamHttpEntity;
@@ -34,6 +32,7 @@ import org.mule.service.http.api.domain.entity.multipart.HttpPart;
 import org.mule.service.http.api.domain.entity.multipart.MultipartHttpEntity;
 import org.mule.service.http.api.domain.request.HttpRequest;
 import org.mule.service.http.api.domain.response.HttpResponse;
+import org.mule.service.http.api.tcp.TcpClientSocketProperties;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
@@ -260,10 +259,8 @@ public class GrizzlyHttpClient implements HttpClient {
 
     populateHeaders(request, builder);
 
-    DefaultHttpRequest defaultHttpRequest = (DefaultHttpRequest) request;
-
-    for (String queryParamName : defaultHttpRequest.getQueryParams().keySet()) {
-      builder.addQueryParam(queryParamName, defaultHttpRequest.getQueryParams().get(queryParamName));
+    for (String queryParamName : request.getQueryParams().keySet()) {
+      builder.addQueryParam(queryParamName, request.getQueryParams().get(queryParamName));
     }
 
     if (authentication != null) {

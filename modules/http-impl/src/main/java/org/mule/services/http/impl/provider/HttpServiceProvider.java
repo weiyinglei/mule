@@ -4,11 +4,12 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.extension.http.internal;
+package org.mule.services.http.impl.provider;
 
 import org.mule.runtime.api.service.ServiceDefinition;
 import org.mule.runtime.api.service.ServiceProvider;
 import org.mule.service.http.api.HttpService;
+import org.mule.services.http.impl.service.HttpServiceImplementation;
 
 import com.google.common.collect.Lists;
 

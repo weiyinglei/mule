@@ -4,14 +4,13 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.extension.http.internal.listener.grizzly;
+package org.mule.services.http.impl.service.server.grizzly;
 
 import static java.lang.Integer.valueOf;
 import static java.lang.System.getProperty;
 import static org.glassfish.grizzly.http.HttpCodecFilter.DEFAULT_MAX_HTTP_PACKET_HEADER_SIZE;
 import static org.mule.runtime.core.api.config.MuleProperties.SYSTEM_PROPERTY_PREFIX;
 import static org.mule.runtime.module.http.internal.HttpMessageLogger.LoggerType.LISTENER;
-import org.mule.extension.socket.api.socket.tcp.TcpServerSocketProperties;
 import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.runtime.core.api.MuleRuntimeException;
 import org.mule.runtime.core.config.i18n.CoreMessages;
@@ -26,6 +25,7 @@ import org.mule.runtime.module.http.internal.listener.grizzly.MuleSslFilter;
 import org.mule.runtime.module.http.internal.listener.grizzly.WorkManagerSourceExecutorProvider;
 import org.mule.service.http.api.server.HttpServer;
 import org.mule.service.http.api.server.ServerAddress;
+import org.mule.service.http.api.tcp.TcpServerSocketProperties;
 
 import java.io.IOException;
 import java.util.Map;

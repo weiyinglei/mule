@@ -4,7 +4,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.extension.http.internal.listener.grizzly;
+package org.mule.services.http.impl.service.server.grizzly;
 
 import static org.glassfish.grizzly.http.util.HttpStatus.CONINTUE_100;
 import static org.glassfish.grizzly.http.util.HttpStatus.EXPECTATION_FAILED_417;

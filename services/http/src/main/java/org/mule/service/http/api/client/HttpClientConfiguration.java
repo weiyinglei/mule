@@ -8,6 +8,7 @@ package org.mule.service.http.api.client;
 
 import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.service.http.api.client.proxy.ProxyConfig;
+import org.mule.service.http.api.tcp.TcpClientSocketProperties;
 
 /**
  * Configuration component that specifies how an {@link HttpClient} should be created.

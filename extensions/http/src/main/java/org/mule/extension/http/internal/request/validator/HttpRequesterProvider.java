@@ -20,7 +20,6 @@ import org.mule.extension.http.api.request.authentication.HttpAuthentication;
 import org.mule.extension.http.api.request.client.UriParameters;
 import org.mule.extension.http.internal.request.client.DefaultUriParameters;
 import org.mule.extension.http.internal.request.client.HttpExtensionClient;
-import org.mule.extension.http.internal.request.grizzly.GrizzlyHttpClient;
 import org.mule.extension.socket.api.socket.tcp.TcpClientSocketProperties;
 import org.mule.runtime.api.connection.CachedConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -42,9 +41,9 @@ import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.module.http.api.HttpConstants;
 import org.mule.runtime.module.tls.api.DefaultTlsContextFactoryBuilder;
+import org.mule.service.http.api.HttpService;
 import org.mule.service.http.api.client.HttpClient;
 import org.mule.service.http.api.client.HttpClientConfiguration;
-import org.mule.service.http.api.client.HttpClientFactory;
 import org.mule.service.http.api.client.proxy.ProxyConfig;
 
 import java.util.function.Function;
@@ -60,7 +59,6 @@ import javax.inject.Inject;
 public class HttpRequesterProvider implements CachedConnectionProvider<HttpExtensionClient>, Initialisable {
 
   private static final int UNLIMITED_CONNECTIONS = -1;
-  private static final String OBJECT_HTTP_CLIENT_FACTORY = "_httpClientFactory";
   private static final String THREAD_NAME_PREFIX_PATTERN = "%shttp.requester.%s";
 
   @Inject
@@ -165,7 +163,8 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpExten
   @DefaultTlsContextFactoryBuilder
   private TlsContextFactoryBuilder defaultTlsContextFactoryBuilder;
 
-  private HttpClientFactory httpClientFactory;
+  @Inject
+  private HttpService httpService;
 
   @Override
   public HttpExtensionClient connect() throws ConnectionException {
@@ -177,12 +176,7 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpExten
         .setUsePersistentConnections(usePersistentConnections).setConnectionIdleTimeout(connectionIdleTimeout)
         .setThreadNamePrefix(threadNamePrefix).setOwnerName(configName).build();
 
-    HttpClient httpClient;
-    if (httpClientFactory == null) {
-      httpClient = new GrizzlyHttpClient(configuration);
-    } else {
-      httpClient = httpClientFactory.create(configuration);
-    }
+    HttpClient httpClient = httpService.getClientFactory().create(configuration);
 
     UriParameters uriParameters = new DefaultUriParameters(protocol, host, port);
     return new HttpExtensionClient(httpClient, uriParameters, authentication);
@@ -220,8 +214,6 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpExten
     }
 
     verifyConnectionsParameters();
-
-    httpClientFactory = muleContext.getRegistry().get(OBJECT_HTTP_CLIENT_FACTORY);
   }
 
   private void verifyConnectionsParameters() throws InitialisationException {
@@ -252,7 +244,7 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpExten
   }
 
 
-  private class TcpClientSocketPropertiesAdapter implements org.mule.service.http.api.client.TcpClientSocketProperties {
+  private class TcpClientSocketPropertiesAdapter implements org.mule.service.http.api.tcp.TcpClientSocketProperties {
 
     TcpClientSocketProperties tcpClientSocketProperties;
 
@@ -277,11 +269,6 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpExten
 
     @Override
     public Integer getConnectionTimeout() {
-      return tcpClientSocketProperties.getConnectionTimeout();
-    }
-
-    @Override
-    public Integer getTimeout() {
       return tcpClientSocketProperties.getConnectionTimeout();
     }
 

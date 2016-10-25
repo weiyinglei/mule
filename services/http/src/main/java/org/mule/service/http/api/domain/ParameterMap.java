@@ -8,8 +8,6 @@ package org.mule.service.http.api.domain;
 
 import static java.util.Collections.unmodifiableMap;
 
-import org.mule.runtime.api.util.MultiMap;
-
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -27,7 +25,7 @@ import java.util.Set;
  * Implementation of a multi-map that allows the aggregation of keys and access to the aggregated list or a single value (the
  * last).
  */
-public class ParameterMap implements MultiMap<String, String>, Serializable {
+public class ParameterMap implements Map<String, String>, Serializable {
 
   protected Map<String, LinkedList<String>> paramsMap;
 
@@ -73,7 +71,6 @@ public class ParameterMap implements MultiMap<String, String>, Serializable {
     return null;
   }
 
-  @Override
   public List<String> getAll(Object key) {
     return paramsMap.containsKey(key) ? Collections.unmodifiableList(paramsMap.get(key)) : Collections.<String>emptyList();
   }

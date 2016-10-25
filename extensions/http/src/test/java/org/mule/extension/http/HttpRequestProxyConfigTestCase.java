@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mule.test.module.extension.internal.util.ExtensionsTestUtils.getConfigurationInstanceFromRegistry;
-import org.mule.extension.http.api.request.proxy.NtlmProxyConfig;
+import org.mule.extension.http.api.request.proxy.DefaultNtlmProxyConfig;
 import org.mule.extension.http.internal.request.validator.HttpRequesterProvider;
 import org.mule.runtime.core.exception.MessagingException;
 import org.mule.runtime.core.internal.connection.ConnectionProviderWrapper;
@@ -107,8 +107,8 @@ public class HttpRequestProxyConfigTestCase extends AbstractHttpTestCase {
       assertThat(proxyConfig.getUsername(), is(PROXY_USERNAME));
       assertThat(proxyConfig.getPassword(), is(PROXY_PASSWORD));
       if (proxyType == ProxyType.NTLM) {
-        assertThat(proxyConfig, is(instanceOf(NtlmProxyConfig.class)));
-        assertThat(((NtlmProxyConfig) proxyConfig).getNtlmDomain(), is(PROXY_NTLM_DOMAIN));
+        assertThat(proxyConfig, is(instanceOf(DefaultNtlmProxyConfig.class)));
+        assertThat(((DefaultNtlmProxyConfig) proxyConfig).getNtlmDomain(), is(PROXY_NTLM_DOMAIN));
       }
     }
   }
