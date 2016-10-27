@@ -48,15 +48,15 @@ public class HttpExtensionClient implements Startable, Stoppable {
   }
 
   @Override
-  public void stop() throws MuleException {
-    startIfNeeded(authentication);
+  public void start() throws MuleException {
     httpClient.start();
+    startIfNeeded(authentication);
   }
 
   @Override
-  public void start() throws MuleException {
-    httpClient.stop();
+  public void stop() throws MuleException {
     stopIfNeeded(authentication);
+    httpClient.stop();
   }
 
   public HttpResponse send(HttpRequest request, int responseTimeout, boolean followRedirects,

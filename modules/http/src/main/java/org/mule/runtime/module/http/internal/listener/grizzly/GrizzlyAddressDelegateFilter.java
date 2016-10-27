@@ -136,4 +136,10 @@ public class GrizzlyAddressDelegateFilter<F extends BaseFilter> extends BaseFilt
   public synchronized void addFilterForAddress(ServerAddress serverAddress, F filter) {
     filters.put(serverAddress, filter);
   }
+
+  public synchronized void removeFilterForAddress(ServerAddress serverAddress) {
+    if (filters.containsKey(serverAddress)) {
+      filters.remove(serverAddress);
+    }
+  }
 }

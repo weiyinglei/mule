@@ -35,6 +35,10 @@ public class WorkManagerSourceExecutorProvider implements ExecutorProvider {
     executorPerServerAddress.put(serverAddress, workManagerSource);
   }
 
+  public void removeExecutor(ServerAddress serverAddress) {
+    executorPerServerAddress.remove(serverAddress);
+  }
+
   @Override
   public Executor getExecutor(ServerAddress serverAddress) {
     try {

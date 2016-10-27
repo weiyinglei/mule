@@ -54,6 +54,11 @@ public class HttpListenerRegistry implements RequestHandlerProvider {
     return serverAddressRequestHandlerRegistry.addRequestHandler(requestMatcher, requestHandler);
   }
 
+  public synchronized void removeHandlersFor(HttpServer server) {
+    requestHandlerPerServerAddress.remove(server);
+    serverAddressToServerMap.remove(server.getServerAddress());
+  }
+
   @Override
   public RequestHandler getRequestHandler(String ip, int port, final HttpRequest request) {
     if (logger.isDebugEnabled()) {

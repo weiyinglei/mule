@@ -79,13 +79,17 @@ public class HttpListenerConnectionManager implements HttpServerFactory, Initial
     }
 
     TlsContextFactory tlsContextFactory = serverConfiguration.getTlsContextFactory();
+    HttpServer httpServer;
     if (tlsContextFactory == null) {
-      return createServer(serverAddress,
-                          serverConfiguration.isUsePersistentConnections(), serverConfiguration.getConnectionIdleTimeout());
+      httpServer = createServer(serverAddress,
+                                serverConfiguration.isUsePersistentConnections(), serverConfiguration.getConnectionIdleTimeout());
     } else {
-      return createSslServer(serverAddress, tlsContextFactory,
-                             serverConfiguration.isUsePersistentConnections(), serverConfiguration.getConnectionIdleTimeout());
+      httpServer = createSslServer(serverAddress, tlsContextFactory,
+                                   serverConfiguration.isUsePersistentConnections(),
+                                   serverConfiguration.getConnectionIdleTimeout());
     }
+
+    return httpServer;
   }
 
   public HttpServer createServer(ServerAddress serverAddress,

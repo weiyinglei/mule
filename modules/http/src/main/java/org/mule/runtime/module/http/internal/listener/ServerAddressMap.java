@@ -40,4 +40,12 @@ public class ServerAddressMap<T> {
     }
     return value;
   }
+
+  public boolean containsKey(Object key) {
+    return internalMap.containsKey(key);
+  }
+
+  public T remove(Object key) {
+    return internalMap.remove(key);
+  }
 }

@@ -149,7 +149,7 @@ public class HttpRequesterProvider implements CachedConnectionProvider<HttpExten
   @Optional
   @Expression(NOT_SUPPORTED)
   @Placement(tab = ADVANCED, group = CONNECTION, order = 4)
-  private TcpClientSocketProperties clientSocketProperties;
+  private TcpClientSocketProperties clientSocketProperties = new TcpClientSocketProperties();
 
   /**
    * Authentication method to use for the HTTP request.

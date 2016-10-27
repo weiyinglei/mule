@@ -177,7 +177,7 @@ public class GrizzlyServerManager implements HttpServerManager {
     sslFilterDelegate.addFilterForAddress(serverAddress, createSslFilter(tlsContextFactory));
     httpServerFilterDelegate.addFilterForAddress(serverAddress,
                                                  createHttpServerFilter(usePersistentConnections, connectionIdleTimeout));
-    final GrizzlyHttpServer grizzlyServer = new GrizzlyHttpServer(serverAddress, transport, httpListenerRegistry);
+    final GrizzlyHttpServer grizzlyServer = new ProxyGrizzlyHttpServer(serverAddress, transport, httpListenerRegistry);
     executorProvider.addExecutor(serverAddress, grizzlyServer);
     servers.put(serverAddress, grizzlyServer);
     return grizzlyServer;
@@ -196,7 +196,7 @@ public class GrizzlyServerManager implements HttpServerManager {
     startTransportIfNotStarted();
     httpServerFilterDelegate.addFilterForAddress(serverAddress,
                                                  createHttpServerFilter(usePersistentConnections, connectionIdleTimeout));
-    final GrizzlyHttpServer grizzlyServer = new GrizzlyHttpServer(serverAddress, transport, httpListenerRegistry);
+    final GrizzlyHttpServer grizzlyServer = new ProxyGrizzlyHttpServer(serverAddress, transport, httpListenerRegistry);
     executorProvider.addExecutor(serverAddress, grizzlyServer);
     servers.put(serverAddress, grizzlyServer);
     return grizzlyServer;
@@ -260,6 +260,26 @@ public class GrizzlyServerManager implements HttpServerManager {
   private int convertToSeconds(int milliseconds) {
     return (int) Math.ceil((double) milliseconds / 1000.0);
 
+  }
+
+  private class ProxyGrizzlyHttpServer extends GrizzlyHttpServer {
+
+    public ProxyGrizzlyHttpServer(ServerAddress serverAddress, TCPNIOTransport transport,
+                                  HttpListenerRegistry listenerRegistry) {
+      super(serverAddress, transport, listenerRegistry);
+    }
+
+    @Override
+    public synchronized void stop() {
+      super.stop();
+      //TODO: move to a dispose method, otherwise servers can't be re started!
+      httpListenerRegistry.removeHandlersFor(this);
+      ServerAddress serverAddress = this.getServerAddress();
+      servers.remove(serverAddress);
+      executorProvider.removeExecutor(serverAddress);
+      httpServerFilterDelegate.removeFilterForAddress(serverAddress);
+      sslFilterDelegate.removeFilterForAddress(serverAddress);
+    }
   }
 
 }
