@@ -370,8 +370,8 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
     }
 
     stopIfStoppable(pipeline);
-    if (processingStrategy instanceof AsynchronousProcessingStrategy) {
-      ((AsynchronousProcessingStrategy) processingStrategy).stop();
+    if (processingStrategy instanceof AsynchronousProcessingStrategyFactory.AsynchronousProcessingStrategy) {
+      ((AsynchronousProcessingStrategyFactory.AsynchronousProcessingStrategy) processingStrategy).stop();
     }
     super.doStop();
   }
