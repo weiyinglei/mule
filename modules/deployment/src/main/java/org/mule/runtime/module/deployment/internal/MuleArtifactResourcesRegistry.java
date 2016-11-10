@@ -32,6 +32,7 @@ import org.mule.runtime.module.deployment.internal.domain.DefaultDomainManager;
 import org.mule.runtime.module.deployment.internal.plugin.ArtifactPluginDescriptorFactory;
 import org.mule.runtime.module.deployment.internal.plugin.ArtifactPluginDescriptorLoader;
 import org.mule.runtime.module.deployment.internal.plugin.DefaultArtifactPluginRepository;
+import org.mule.runtime.module.deployment.internal.temporary.TemporaryArtifactClassLoaderBuilderFactory;
 import org.mule.runtime.module.service.DefaultServiceDiscoverer;
 import org.mule.runtime.module.service.FileSystemServiceProviderDiscoverer;
 import org.mule.runtime.module.service.MuleServiceManager;

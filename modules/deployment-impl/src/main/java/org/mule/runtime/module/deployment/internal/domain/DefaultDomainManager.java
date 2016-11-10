@@ -7,9 +7,8 @@
 
 package org.mule.runtime.module.deployment.internal.domain;
 
-import org.mule.runtime.deployment.model.api.domain.Domain;
-
 import static java.lang.String.format;
+import org.mule.runtime.deployment.model.api.domain.Domain;
 
 import java.util.HashMap;
 import java.util.Map;
