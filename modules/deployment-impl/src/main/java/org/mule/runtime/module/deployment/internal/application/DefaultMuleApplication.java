@@ -8,20 +8,21 @@ package org.mule.runtime.module.deployment.internal.application;
 
 import static java.lang.String.format;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
+import static org.mule.runtime.api.util.Preconditions.checkArgument;
 import static org.mule.runtime.core.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.core.util.ClassUtils.withContextClassLoader;
 import static org.mule.runtime.core.util.SplashScreen.miniSplash;
 import static org.mule.runtime.module.deployment.internal.artifact.ArtifactContextBuilder.newBuilder;
-
 import org.mule.runtime.api.exception.MuleException;
+import org.mule.runtime.api.lifecycle.Stoppable;
 import org.mule.runtime.api.metadata.MetadataService;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.connectivity.ConnectivityTestingService;
+import org.mule.runtime.core.api.context.notification.MuleContextListener;
 import org.mule.runtime.core.api.context.notification.MuleContextNotificationListener;
 import org.mule.runtime.core.api.context.notification.ServerNotificationListener;
-import org.mule.runtime.api.lifecycle.Stoppable;
 import org.mule.runtime.core.config.builders.SimpleConfigurationBuilder;
 import org.mule.runtime.core.context.notification.MuleContextNotification;
 import org.mule.runtime.core.context.notification.NotificationException;
@@ -42,9 +43,7 @@ import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 import org.mule.runtime.module.artifact.classloader.DisposableClassLoader;
 import org.mule.runtime.module.artifact.classloader.MuleDeployableArtifactClassLoader;
 import org.mule.runtime.module.artifact.classloader.RegionClassLoader;
-import org.mule.runtime.module.deployment.api.DeploymentListener;
 import org.mule.runtime.module.deployment.internal.artifact.ArtifactContextBuilder;
-import org.mule.runtime.module.deployment.internal.artifact.MuleContextDeploymentListener;
 import org.mule.runtime.module.deployment.internal.domain.DomainRepository;
 import org.mule.runtime.module.reboot.MuleContainerBootstrapUtils;
 import org.mule.runtime.module.service.ServiceRepository;
@@ -59,7 +58,6 @@ import org.slf4j.LoggerFactory;
 public class DefaultMuleApplication implements Application {
 
   protected transient final Logger logger = LoggerFactory.getLogger(getClass());
-  protected transient final Logger deployLogger = LoggerFactory.getLogger(DefaultMuleApplication.class);
 
   protected final ApplicationDescriptor descriptor;
   private final DomainRepository domainRepository;
@@ -70,7 +68,7 @@ public class DefaultMuleApplication implements Application {
   private ApplicationStatus status;
 
   protected ArtifactClassLoader deploymentClassLoader;
-  protected DeploymentListener deploymentListener;
+  protected MuleContextListener muleContextListener;
   private ServerNotificationListener<MuleContextNotification> statusListener;
   private ArtifactContext artifactContext;
 
@@ -83,7 +81,6 @@ public class DefaultMuleApplication implements Application {
     this.domainRepository = domainRepository;
     this.serviceRepository = serviceRepository;
     this.classLoaderRepository = classLoaderRepository;
-    this.deploymentListener = new NullDeploymentListener();
     this.artifactPlugins = artifactPlugins;
     this.location = location;
     this.deploymentClassLoader = deploymentClassLoader;
@@ -93,12 +90,10 @@ public class DefaultMuleApplication implements Application {
     }
   }
 
-  public void setDeploymentListener(DeploymentListener deploymentListener) {
-    if (deploymentListener == null) {
-      throw new IllegalArgumentException("Deployment listener cannot be null");
-    }
+  public void setMuleContextListener(MuleContextListener muleContextListener) {
+    checkArgument(muleContextListener != null, "setMuleContextListener cannot be null");
 
-    this.deploymentListener = deploymentListener;
+    this.muleContextListener = muleContextListener;
   }
 
   @Override
@@ -148,7 +143,7 @@ public class DefaultMuleApplication implements Application {
       withContextClassLoader(null, () -> {
         ApplicationStartedSplashScreen splashScreen = new ApplicationStartedSplashScreen();
         splashScreen.createMessage(descriptor);
-        deployLogger.info(splashScreen.toString());
+        logger.info(splashScreen.toString());
       });
     } catch (Exception e) {
       setStatusToFailed();
@@ -187,8 +182,8 @@ public class DefaultMuleApplication implements Application {
       if (domain.getMuleContext() != null) {
         artifactBuilder.setParentContext(domain.getMuleContext());
       }
-      if (deploymentListener != null) {
-        artifactBuilder.setMuleContextListener(new MuleContextDeploymentListener(getArtifactName(), deploymentListener));
+      if (muleContextListener != null) {
+        artifactBuilder.setMuleContextListener(muleContextListener);
       }
       artifactContext = artifactBuilder.build();
       setMuleContext(artifactContext.getMuleContext());

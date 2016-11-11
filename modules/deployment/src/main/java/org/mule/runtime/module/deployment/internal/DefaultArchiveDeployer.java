@@ -14,7 +14,6 @@ import org.mule.runtime.core.util.CollectionUtils;
 import org.mule.runtime.core.util.StringUtils;
 import org.mule.runtime.deployment.model.api.DeploymentException;
 import org.mule.runtime.module.deployment.api.DeploymentListener;
-import org.mule.runtime.module.deployment.internal.application.NullDeploymentListener;
 import org.mule.runtime.module.deployment.internal.artifact.ArtifactFactory;
 import org.mule.runtime.deployment.model.api.DeployableArtifact;
 import org.mule.runtime.module.deployment.internal.util.ObservableList;

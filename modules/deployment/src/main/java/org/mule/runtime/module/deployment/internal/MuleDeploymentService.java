@@ -21,6 +21,7 @@ import org.mule.runtime.module.deployment.api.StartupListener;
 import org.mule.runtime.deployment.model.api.application.Application;
 import org.mule.runtime.deployment.model.api.domain.Domain;
 import org.mule.runtime.module.deployment.internal.application.DefaultApplicationFactory;
+import org.mule.runtime.module.deployment.internal.artifact.DeploymentMuleContextListenerFactory;
 import org.mule.runtime.module.deployment.internal.artifact.ArtifactFactory;
 import org.mule.runtime.module.deployment.internal.domain.DefaultDomainFactory;
 import org.mule.runtime.module.deployment.internal.domain.DomainFactory;
@@ -72,8 +73,8 @@ public class MuleDeploymentService implements DeploymentService {
   public MuleDeploymentService(DefaultDomainFactory domainFactory, DefaultApplicationFactory applicationFactory) {
     // TODO MULE-9653 : Migrate domain class loader creation to use ArtifactClassLoaderBuilder which already has support for
     // artifact plugins.
-    domainFactory.setDeploymentListener(domainDeploymentListener);
-    applicationFactory.setDeploymentListener(applicationDeploymentListener);
+    domainFactory.setMuleContextListenerFactory(new DeploymentMuleContextListenerFactory(domainDeploymentListener));
+    applicationFactory.setMuleContextListenerFactory(new DeploymentMuleContextListenerFactory(applicationDeploymentListener));
 
     ArtifactDeployer<Application> applicationMuleDeployer = new DefaultArtifactDeployer<>();
     ArtifactDeployer<Domain> domainMuleDeployer = new DefaultArtifactDeployer<>();

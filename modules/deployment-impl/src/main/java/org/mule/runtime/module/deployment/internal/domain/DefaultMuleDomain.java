@@ -6,18 +6,19 @@
  */
 package org.mule.runtime.module.deployment.internal.domain;
 
+import static org.mule.runtime.api.util.Preconditions.checkArgument;
 import static org.mule.runtime.core.config.bootstrap.ArtifactType.DOMAIN;
 import static org.mule.runtime.core.util.ClassUtils.withContextClassLoader;
 import static org.mule.runtime.core.util.SplashScreen.miniSplash;
 import static org.mule.runtime.module.deployment.internal.artifact.ArtifactContextBuilder.newBuilder;
-
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
+import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.metadata.MetadataService;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.core.api.connectivity.ConnectivityTestingService;
-import org.mule.runtime.api.lifecycle.InitialisationException;
+import org.mule.runtime.core.api.context.notification.MuleContextListener;
 import org.mule.runtime.core.config.i18n.CoreMessages;
 import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.ExceptionUtils;
@@ -29,11 +30,7 @@ import org.mule.runtime.deployment.model.api.domain.Domain;
 import org.mule.runtime.deployment.model.api.domain.DomainDescriptor;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
 import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
-import org.mule.runtime.module.deployment.api.DeploymentListener;
-import org.mule.runtime.module.deployment.internal.MuleDeploymentService;
-import org.mule.runtime.module.deployment.internal.application.NullDeploymentListener;
 import org.mule.runtime.module.deployment.internal.artifact.ArtifactContextBuilder;
-import org.mule.runtime.module.deployment.internal.artifact.MuleContextDeploymentListener;
 import org.mule.runtime.module.reboot.MuleContainerBootstrapUtils;
 import org.mule.runtime.module.service.ServiceRepository;
 
@@ -49,12 +46,12 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultMuleDomain implements Domain {
 
+  // TODO(pablo.kraan): refactoring - check that logger behaves as before
   protected transient final Logger logger = LoggerFactory.getLogger(getClass());
-  protected transient final Logger deployLogger = LoggerFactory.getLogger(MuleDeploymentService.class);
 
   private final DomainDescriptor descriptor;
   private final ServiceRepository serviceRepository;
-  private DeploymentListener deploymentListener;
+  private MuleContextListener muleContextListener;
   private ArtifactClassLoader deploymentClassLoader;
   private final ClassLoaderRepository classLoaderRepository;
 
@@ -65,7 +62,6 @@ public class DefaultMuleDomain implements Domain {
                            ClassLoaderRepository classLoaderRepository, ServiceRepository serviceRepository) {
     this.deploymentClassLoader = deploymentClassLoader;
     this.classLoaderRepository = classLoaderRepository;
-    this.deploymentListener = new NullDeploymentListener();
     this.descriptor = descriptor;
     this.serviceRepository = serviceRepository;
     refreshClassLoaderAndLoadConfigResourceFile();
@@ -82,8 +78,10 @@ public class DefaultMuleDomain implements Domain {
     }
   }
 
-  public void setDeploymentListener(DeploymentListener deploymentListener) {
-    this.deploymentListener = deploymentListener;
+  public void setMuleContextListener(MuleContextListener muleContextListener) {
+    checkArgument(muleContextListener != null, "muleContextListener cannot be null");
+
+    this.muleContextListener = muleContextListener;
   }
 
   public String getName() {
@@ -144,8 +142,8 @@ public class DefaultMuleDomain implements Domain {
             .setConfigurationFiles(new String[] {this.configResourceFile.getAbsolutePath()}).setArtifactType(DOMAIN)
             .setEnableLazyInit(lazy).setClassLoaderRepository(classLoaderRepository).setServiceRepository(serviceRepository);
 
-        if (deploymentListener != null) {
-          artifactBuilder.setMuleContextListener(new MuleContextDeploymentListener(getArtifactName(), deploymentListener));
+        if (muleContextListener != null) {
+          artifactBuilder.setMuleContextListener(muleContextListener);
         }
         artifactContext = artifactBuilder.build();
       }
@@ -200,7 +198,7 @@ public class DefaultMuleDomain implements Domain {
       withContextClassLoader(null, () -> {
         DomainStartedSplashScreen splashScreen = new DomainStartedSplashScreen();
         splashScreen.createMessage(descriptor);
-        deployLogger.info(splashScreen.toString());
+        logger.info(splashScreen.toString());
       });
     } catch (Exception e) {
       throw new DeploymentStartException(CoreMessages.createStaticMessage("Failure trying to start domain " + getArtifactName()),

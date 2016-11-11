@@ -21,8 +21,8 @@ import org.mule.runtime.deployment.model.api.plugin.ArtifactPluginDescriptor;
 import org.mule.runtime.deployment.model.api.plugin.ArtifactPluginRepository;
 import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 import org.mule.runtime.module.artifact.classloader.MuleDeployableArtifactClassLoader;
-import org.mule.runtime.module.deployment.api.DeploymentListener;
 import org.mule.runtime.module.deployment.internal.artifact.ArtifactFactory;
+import org.mule.runtime.module.deployment.internal.artifact.MuleContextListenerFactory;
 import org.mule.runtime.module.deployment.internal.domain.DomainRepository;
 import org.mule.runtime.module.deployment.internal.plugin.DefaultArtifactPlugin;
 import org.mule.runtime.module.reboot.MuleContainerBootstrapUtils;
@@ -43,7 +43,7 @@ public class DefaultApplicationFactory implements ArtifactFactory<Application> {
   private final ArtifactPluginRepository artifactPluginRepository;
   private final ServiceRepository serviceRepository;
   private final ClassLoaderRepository classLoaderRepository;
-  protected DeploymentListener deploymentListener;
+  private MuleContextListenerFactory muleContextListenerFactory;
 
   public DefaultApplicationFactory(ApplicationClassLoaderBuilderFactory applicationClassLoaderBuilderFactory,
                                    ApplicationDescriptorFactory applicationDescriptorFactory,
@@ -64,8 +64,8 @@ public class DefaultApplicationFactory implements ArtifactFactory<Application> {
     this.serviceRepository = serviceRepository;
   }
 
-  public void setDeploymentListener(DeploymentListener deploymentListener) {
-    this.deploymentListener = deploymentListener;
+  public void setMuleContextListenerFactory(MuleContextListenerFactory muleContextListenerFactory) {
+    this.muleContextListenerFactory = muleContextListenerFactory;
   }
 
   public Application createArtifact(File appDir) throws IOException {
@@ -107,8 +107,8 @@ public class DefaultApplicationFactory implements ArtifactFactory<Application> {
         new DefaultMuleApplication(descriptor, applicationClassLoader, artifactPlugins, domainRepository,
                                    serviceRepository, descriptor.getArtifactLocation(), classLoaderRepository);
 
-    if (deploymentListener != null) {
-      delegate.setDeploymentListener(deploymentListener);
+    if (muleContextListenerFactory != null) {
+      delegate.setMuleContextListener(muleContextListenerFactory.create(descriptor.getName()));
     }
 
     return new ApplicationWrapper(delegate);
