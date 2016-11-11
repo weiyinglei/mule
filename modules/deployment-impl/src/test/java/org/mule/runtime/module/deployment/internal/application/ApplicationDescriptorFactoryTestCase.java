@@ -31,7 +31,6 @@ import org.mule.runtime.deployment.model.api.application.ApplicationDescriptor;
 import org.mule.runtime.deployment.model.api.plugin.ArtifactPluginDescriptor;
 import org.mule.runtime.deployment.model.api.plugin.ArtifactPluginRepository;
 import org.mule.runtime.module.artifact.descriptor.ClassLoaderModel.ClassLoaderModelBuilder;
-import org.mule.runtime.module.deployment.internal.DeploymentServiceTestCase;
 import org.mule.runtime.module.deployment.internal.builder.ArtifactPluginFileBuilder;
 import org.mule.runtime.module.deployment.internal.plugin.ArtifactPluginDescriptorFactory;
 import org.mule.runtime.module.deployment.internal.plugin.ArtifactPluginDescriptorLoader;
@@ -62,7 +61,7 @@ public class ApplicationDescriptorFactoryTestCase extends AbstractMuleTestCase {
           .compile("echo.jar");
 
   private static File getResourceFile(String resource) {
-    return new File(DeploymentServiceTestCase.class.getResource(resource).getFile());
+    return new File(ApplicationDescriptorFactoryTestCase.class.getResource(resource).getFile());
   }
 
   public static final String APP_NAME = "testApp";
