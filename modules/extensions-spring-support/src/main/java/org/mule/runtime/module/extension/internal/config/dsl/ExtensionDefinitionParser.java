@@ -9,7 +9,6 @@ package org.mule.runtime.module.extension.internal.config.dsl;
 import static java.lang.String.format;
 import static java.time.Instant.ofEpochMilli;
 import static org.mule.metadata.internal.utils.MetadataTypeUtils.getDefaultValue;
-import static org.mule.metadata.java.api.utils.JavaTypeUtils.getGenericTypeAt;
 import static org.mule.metadata.java.api.utils.JavaTypeUtils.getType;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
@@ -35,7 +34,6 @@ import org.mule.metadata.api.model.MetadataType;
 import org.mule.metadata.api.model.ObjectType;
 import org.mule.metadata.api.model.StringType;
 import org.mule.metadata.api.visitor.MetadataTypeVisitor;
-import org.mule.metadata.java.api.annotation.ClassInformationAnnotation;
 import org.mule.runtime.api.config.PoolingProfile;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -43,14 +41,12 @@ import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.ModelProperty;
 import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.api.tls.TlsContextFactory;
-import org.mule.runtime.core.api.Event;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.NestedProcessor;
 import org.mule.runtime.core.api.config.ConfigurationException;
 import org.mule.runtime.core.api.config.ThreadingProfile;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.retry.RetryPolicyTemplate;
-import org.mule.runtime.core.util.ClassUtils;
 import org.mule.runtime.core.util.TemplateParser;
 import org.mule.runtime.core.util.ValueHolder;
 import org.mule.runtime.dsl.api.component.AttributeDefinition;
@@ -104,7 +100,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
@@ -132,9 +127,9 @@ public abstract class ExtensionDefinitionParser {
 
   protected final ExtensionParsingContext parsingContext;
   protected final List<ObjectParsingDelegate> objectParsingDelegates = ImmutableList
-      .of(new FixedTypeParsingDelegate(PoolingProfile.class), new FixedTypeParsingDelegate(RetryPolicyTemplate.class),
-          new FixedTypeParsingDelegate(TlsContextFactory.class), new FixedTypeParsingDelegate(ThreadingProfile.class),
-          new DefaultObjectParsingDelegate());
+    .of(new FixedTypeParsingDelegate(PoolingProfile.class), new FixedTypeParsingDelegate(RetryPolicyTemplate.class),
+        new FixedTypeParsingDelegate(TlsContextFactory.class), new FixedTypeParsingDelegate(ThreadingProfile.class),
+        new DefaultObjectParsingDelegate());
   protected final DslSyntaxResolver dslResolver;
   protected final Builder baseDefinitionBuilder;
   private final TemplateParser parser = TemplateParser.createMuleStyleParser();
@@ -143,7 +138,7 @@ public abstract class ExtensionDefinitionParser {
   private final Map<String, AttributeDefinition.Builder> parameters = new HashMap<>();
   private final List<ComponentBuildingDefinition> parsedDefinitions = new ArrayList<>();
   private final List<ValueResolverParsingDelegate> valueResolverParsingDelegates =
-      ImmutableList.of(new CharsetValueResolverParsingDelegate(), new MediaTypeValueResolverParsingDelegate());
+    ImmutableList.of(new CharsetValueResolverParsingDelegate(), new MediaTypeValueResolverParsingDelegate());
   private final ValueResolverParsingDelegate defaultValueResolverParsingDelegate = new DefaultValueResolverParsingDelegate();
   protected final MuleContext muleContext;
 
@@ -176,8 +171,8 @@ public abstract class ExtensionDefinitionParser {
     AttributeDefinition parametersDefinition = fromFixedValue(new HashMap<>()).build();
     if (!parameters.isEmpty()) {
       KeyAttributeDefinitionPair[] attributeDefinitions = parameters.entrySet().stream()
-          .map(entry -> newBuilder().withAttributeDefinition(entry.getValue().build()).withKey(entry.getKey()).build())
-          .toArray(KeyAttributeDefinitionPair[]::new);
+        .map(entry -> newBuilder().withAttributeDefinition(entry.getValue().build()).withKey(entry.getKey()).build())
+        .toArray(KeyAttributeDefinitionPair[]::new);
       parametersDefinition = fromMultipleDefinitions(attributeDefinitions).build();
     }
 
@@ -227,10 +222,10 @@ public abstract class ExtensionDefinitionParser {
             }
 
             addDefinition(baseDefinitionBuilder.copy()
-                .withIdentifier(paramDsl.getElementName())
-                .withTypeDefinition(fromType(String.class))
-                .withTypeConverter(converter)
-                .build());
+                            .withIdentifier(paramDsl.getElementName())
+                            .withTypeDefinition(fromType(String.class))
+                            .withTypeConverter(converter)
+                            .build());
           } else {
             defaultVisit(stringType);
           }
@@ -241,7 +236,14 @@ public abstract class ExtensionDefinitionParser {
           if (isNestedProcessor(objectType)) {
             parseNestedProcessor(parameter);
           } else {
-            parseObjectParameter(parameter, paramDsl);
+            if (!parsingContext.isRegistered(paramDsl.getElementName(), paramDsl.getNamespace())) {
+              parsingContext.registerObjectType(paramDsl.getElementName(), paramDsl.getNamespace(), objectType);
+              parseObjectParameter(parameter, paramDsl);
+            } else {
+              parseObject(getKey(parameter), parameter.getName(), objectType, parameter.getDefaultValue(),
+                          parameter.getExpressionSupport(), parameter.isRequired(), acceptsReferences(parameter),
+                          paramDsl, parameter.getModelProperties());
+            }
           }
         }
 
@@ -307,7 +309,7 @@ public abstract class ExtensionDefinitionParser {
     final String mapElementName = paramDsl.getElementName();
 
     addParameter(getChildKey(key), fromChildMapConfiguration(keyClass, valueClass).withWrapperIdentifier(mapElementName)
-        .withDefaultValue(defaultValue));
+      .withDefaultValue(defaultValue));
 
     addDefinition(baseDefinitionBuilder.copy().withIdentifier(mapElementName).withTypeDefinition(fromType(mapType)).build());
 
@@ -323,20 +325,20 @@ public abstract class ExtensionDefinitionParser {
       @Override
       protected void defaultVisit(MetadataType metadataType) {
         addDefinition(baseDefinitionBuilder.copy()
-            .withIdentifier(valueDsl.getElementName())
-            .withTypeDefinition(fromMapEntryType(keyClass, valueClass))
-            .withKeyTypeConverter(value -> resolverOf(parameterName, keyType, value, null, expressionSupport, true,
-                                                      modelProperties, false))
-            .withTypeConverter(value -> resolverOf(parameterName, valueType, value, null, expressionSupport, true,
-                                                   modelProperties, false))
-            .build());
+                        .withIdentifier(valueDsl.getElementName())
+                        .withTypeDefinition(fromMapEntryType(keyClass, valueClass))
+                        .withKeyTypeConverter(value -> resolverOf(parameterName, keyType, value, null, expressionSupport, true,
+                                                                  modelProperties, false))
+                        .withTypeConverter(value -> resolverOf(parameterName, valueType, value, null, expressionSupport, true,
+                                                               modelProperties, false))
+                        .build());
       }
 
       @Override
       public void visitObject(ObjectType objectType) {
         defaultVisit(objectType);
         if ((valueDsl.supportsTopLevelDeclaration() || (valueDsl.supportsChildDeclaration() && !valueDsl.isWrapped())) &&
-            !parsingContext.isRegistered(valueDsl.getElementName(), valueDsl.getNamespace())) {
+          !parsingContext.isRegistered(valueDsl.getElementName(), valueDsl.getNamespace())) {
           try {
             parsingContext.registerObjectType(valueDsl.getElementName(), valueDsl.getNamespace(), objectType);
             new ObjectTypeParameterParser(baseDefinitionBuilder.copy(), objectType, getContextClassLoader(), dslResolver,
@@ -358,20 +360,20 @@ public abstract class ExtensionDefinitionParser {
             @Override
             protected void visitBasicType(MetadataType metadataType) {
               addDefinition(baseDefinitionBuilder.copy().withIdentifier(valueListGenericDsl.get().getElementName())
-                  .withTypeDefinition(fromType(getType(metadataType)))
-                  .withTypeConverter(
-                                     value -> resolverOf(parameterName, metadataType, value, getDefaultValue(metadataType),
-                                                         getExpressionSupport(metadataType), false, modelProperties))
-                  .build());
+                              .withTypeDefinition(fromType(getType(metadataType)))
+                              .withTypeConverter(
+                                value -> resolverOf(parameterName, metadataType, value, getDefaultValue(metadataType),
+                                                    getExpressionSupport(metadataType), false, modelProperties))
+                              .build());
             }
 
             @Override
             protected void defaultVisit(MetadataType metadataType) {
               addDefinition(baseDefinitionBuilder.copy().withIdentifier(valueListGenericDsl.get().getElementName())
-                  .withTypeDefinition(fromType(ValueResolver.class))
-                  .withObjectFactoryType(TopLevelParameterObjectFactory.class)
-                  .withConstructorParameterDefinition(fromFixedValue(arrayType.getType()).build())
-                  .withConstructorParameterDefinition(fromFixedValue(getContextClassLoader()).build()).build());
+                              .withTypeDefinition(fromType(ValueResolver.class))
+                              .withObjectFactoryType(TopLevelParameterObjectFactory.class)
+                              .withConstructorParameterDefinition(fromFixedValue(arrayType.getType()).build())
+                              .withConstructorParameterDefinition(fromFixedValue(getContextClassLoader()).build()).build());
             }
           });
         }
@@ -417,7 +419,7 @@ public abstract class ExtensionDefinitionParser {
     final String collectionElementName = parameterDsl.getElementName();
     addParameter(getChildKey(key), fromChildConfiguration(collectionType).withWrapperIdentifier(collectionElementName));
     addDefinition(baseDefinitionBuilder.copy().withIdentifier(collectionElementName).withTypeDefinition(fromType(collectionType))
-        .build());
+                    .build());
 
 
     Optional<DslElementSyntax> collectionItemDsl = parameterDsl.getGeneric(arrayType.getType());
@@ -429,9 +431,9 @@ public abstract class ExtensionDefinitionParser {
 
         private void addBasicTypeDefinition(MetadataType metadataType) {
           Builder itemDefinitionBuilder = baseDefinitionBuilder.copy().withIdentifier(itemIdentifier).withNamespace(itemNamespace)
-              .withTypeDefinition(fromType(getType(metadataType)))
-              .withTypeConverter(value -> resolverOf(name, metadataType, value, getDefaultValue(metadataType).orElse(null),
-                                                     getExpressionSupport(metadataType), false, modelProperties));
+            .withTypeDefinition(fromType(getType(metadataType)))
+            .withTypeConverter(value -> resolverOf(name, metadataType, value, getDefaultValue(metadataType).orElse(null),
+                                                   getExpressionSupport(metadataType), false, modelProperties));
           addDefinition(itemDefinitionBuilder.build());
         }
 
@@ -454,7 +456,7 @@ public abstract class ExtensionDefinitionParser {
         public void visitObject(ObjectType objectType) {
           DslElementSyntax itemDsl = collectionItemDsl.get();
           if ((itemDsl.supportsTopLevelDeclaration() || itemDsl.supportsChildDeclaration()) &&
-              !parsingContext.isRegistered(itemDsl.getElementName(), itemDsl.getNamespace())) {
+            !parsingContext.isRegistered(itemDsl.getElementName(), itemDsl.getNamespace())) {
             try {
               parsingContext.registerObjectType(itemDsl.getElementName(), itemDsl.getNamespace(), objectType);
               new ObjectTypeParameterParser(baseDefinitionBuilder.copy(), objectType, getContextClassLoader(), dslResolver,
@@ -490,11 +492,11 @@ public abstract class ExtensionDefinitionParser {
 
     if (isExpressionFunction(modelProperties) && value != null) {
       resolver =
-          new ExpressionFunctionValueResolver<>((String) value, expectedType, muleContext);
+        new ExpressionFunctionValueResolver<>((String) value, expectedType, muleContext);
     }
     if (isExpressionResolver(modelProperties) && value != null) {
       resolver =
-          new ExpressionBasedParameterResolverValueResolver<>((String) value, expectedType, muleContext);
+        new ExpressionBasedParameterResolverValueResolver<>((String) value, expectedType, muleContext);
     }
 
     final Class<Object> expectedClass = getType(expectedType);
@@ -538,8 +540,8 @@ public abstract class ExtensionDefinitionParser {
             valueResolver = (ValueResolver) delegate.get().parse(value.toString(), objectType, typeDsl.get(), muleContext);
           } else {
             valueResolver = acceptsReferences
-                ? defaultValueResolverParsingDelegate.parse(value.toString(), objectType, null, muleContext)
-                : new StaticValueResolver<>(value);
+              ? defaultValueResolverParsingDelegate.parse(value.toString(), objectType, null, muleContext)
+              : new StaticValueResolver<>(value);
           }
 
           resolverValueHolder.set(valueResolver);
@@ -548,10 +550,10 @@ public abstract class ExtensionDefinitionParser {
         @Override
         protected void defaultVisit(MetadataType metadataType) {
           ValueResolver delegateResolver = locateParsingDelegate(valueResolverParsingDelegates, metadataType)
-              .map(delegate -> delegate.parse(value.toString(), metadataType, null, muleContext))
-              .orElseGet(() -> acceptsReferences
-                  ? defaultValueResolverParsingDelegate.parse(value.toString(), metadataType, null, muleContext)
-                  : new StaticValueResolver<>(value));
+            .map(delegate -> delegate.parse(value.toString(), metadataType, null, muleContext))
+            .orElseGet(() -> acceptsReferences
+              ? defaultValueResolverParsingDelegate.parse(value.toString(), metadataType, null, muleContext)
+              : new StaticValueResolver<>(value));
 
           resolverValueHolder.set(delegateResolver);
         }
@@ -566,8 +568,8 @@ public abstract class ExtensionDefinitionParser {
 
     if (resolver.isDynamic() && expressionSupport == NOT_SUPPORTED) {
       throw new IllegalArgumentException(
-                                         format("An expression value was given for parameter '%s' but it doesn't support expressions",
-                                                parameterName));
+        format("An expression value was given for parameter '%s' but it doesn't support expressions",
+               parameterName));
     }
 
     if (!resolver.isDynamic() && expressionSupport == REQUIRED && required) {
@@ -615,9 +617,9 @@ public abstract class ExtensionDefinitionParser {
                                                               ExpressionSupport expressionSupport, boolean required,
                                                               boolean acceptsReferences, Set<ModelProperty> modelProperties) {
     AttributeDefinition.Builder definitionBuilder =
-        fromSimpleParameter(name, value -> resolverOf(name, type, value, defaultValue, expressionSupport, required,
-                                                      modelProperties, acceptsReferences))
-                                                          .withDefaultValue(defaultValue);
+      fromSimpleParameter(name, value -> resolverOf(name, type, value, defaultValue, expressionSupport, required,
+                                                    modelProperties, acceptsReferences))
+        .withDefaultValue(defaultValue);
 
     addParameter(key, definitionBuilder);
 
@@ -654,12 +656,11 @@ public abstract class ExtensionDefinitionParser {
     final String elementNamespace = elementDsl.getNamespace();
     final String elementName = elementDsl.getElementName();
 
-    if (elementDsl.supportsChildDeclaration() && !elementDsl.isWrapped()
-        && !parsingContext.isRegistered(elementName, elementNamespace)) {
+    if (elementDsl.supportsChildDeclaration() && !elementDsl.isWrapped()) {
       try {
         new ObjectTypeParameterParser(baseDefinitionBuilder.copy(), elementName, elementNamespace, type, getContextClassLoader(),
                                       dslResolver, parsingContext, muleContext).parse()
-                                          .forEach(this::addDefinition);
+          .forEach(this::addDefinition);
       } catch (Exception e) {
         throw new MuleRuntimeException(new ConfigurationException(e));
       }
@@ -672,17 +673,17 @@ public abstract class ExtensionDefinitionParser {
     parseAttributeParameter(key, name, type, defaultValue, expressionSupport, required, acceptsReferences, modelProperties);
 
     ObjectParsingDelegate delegate = (ObjectParsingDelegate) locateParsingDelegate(objectParsingDelegates, type)
-        .orElseThrow(() -> new MuleRuntimeException(createStaticMessage("Could not find a parsing delegate for type "
-            + getType(type).getName())));
+      .orElseThrow(() -> new MuleRuntimeException(createStaticMessage("Could not find a parsing delegate for type "
+                                                                        + getType(type).getName())));
 
     addParameter(getChildKey(key), delegate.parse(name, type, elementDsl, muleContext));
   }
 
   private <M extends MetadataType, T> Optional<ParsingDelegate<M, T>> locateParsingDelegate(
-                                                                                            List<? extends ParsingDelegate<M, T>> delegatesList,
-                                                                                            M metadataType) {
+    List<? extends ParsingDelegate<M, T>> delegatesList,
+    M metadataType) {
     return (Optional<ParsingDelegate<M, T>>) delegatesList.stream().filter(candidate -> candidate.accepts(metadataType))
-        .findFirst();
+      .findFirst();
   }
 
   /**
@@ -706,19 +707,19 @@ public abstract class ExtensionDefinitionParser {
                  fromChildConfiguration(NestedProcessorValueResolver.class).withWrapperIdentifier(processorElementName));
 
     addDefinition(baseDefinitionBuilder.copy().withIdentifier(processorElementName)
-        .withTypeDefinition(fromType(NestedProcessorValueResolver.class))
-        .withConstructorParameterDefinition(fromChildConfiguration(Processor.class).build()).build());
+                    .withTypeDefinition(fromType(NestedProcessorValueResolver.class))
+                    .withConstructorParameterDefinition(fromChildConfiguration(Processor.class).build()).build());
   }
 
   private void parseNestedProcessorList(ParameterModel parameterModel) {
     final String processorElementName = hyphenize(parameterModel.getName());
     addParameter(getChildKey(parameterModel.getName()), fromChildCollectionConfiguration(NestedProcessorListValueResolver.class)
-        .withWrapperIdentifier(processorElementName));
+      .withWrapperIdentifier(processorElementName));
 
     addDefinition(baseDefinitionBuilder.copy().withIdentifier(processorElementName)
-        .withTypeDefinition(fromType(NestedProcessorListValueResolver.class))
-        .withConstructorParameterDefinition(fromChildCollectionConfiguration(Processor.class).build())
-        .build());
+                    .withTypeDefinition(fromType(NestedProcessorListValueResolver.class))
+                    .withConstructorParameterDefinition(fromChildCollectionConfiguration(Processor.class).build())
+                    .build());
   }
 
   private boolean isExpressionFunction(Set<ModelProperty> modelProperties) {
@@ -727,8 +728,8 @@ public abstract class ExtensionDefinitionParser {
 
   private boolean isExpressionResolver(Set<ModelProperty> modelProperties) {
     return modelProperties
-        .stream()
-        .anyMatch(property -> property instanceof ParameterResolverTypeModelProperty);
+      .stream()
+      .anyMatch(property -> property instanceof ParameterResolverTypeModelProperty);
   }
 
   private ValueResolver doParseDate(Object value, Class<?> type) {

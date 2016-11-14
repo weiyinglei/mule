@@ -26,6 +26,7 @@ import org.mule.runtime.core.util.func.CompositePredicate;
 import org.mule.runtime.dsl.api.component.ObjectFactory;
 import org.mule.runtime.extension.api.util.NameUtils;
 import org.mule.runtime.module.extension.internal.introspection.ParameterGroup;
+import org.mule.runtime.module.extension.internal.model.property.NullSafeModelProperty;
 import org.mule.runtime.module.extension.internal.model.property.ParameterGroupModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.resolver.CollectionValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.MapValueResolver;
@@ -97,7 +98,8 @@ public abstract class AbstractExtensionObjectFactory<T> implements ObjectFactory
             resolver = toValueResolver(parameters.get(parameterName));
           } else if (isNullSafe(p)) {
             resolver = NullSafeValueResolverWrapper
-                .of(p.getType(), new StaticValueResolver<>(null), p.getModelProperties(), muleContext);
+                .of(p.getModelProperty(NullSafeModelProperty.class).get().defaultType(),
+                    new StaticValueResolver<>(null), p.getModelProperties(), muleContext);
           }
 
           if (resolver != null) {

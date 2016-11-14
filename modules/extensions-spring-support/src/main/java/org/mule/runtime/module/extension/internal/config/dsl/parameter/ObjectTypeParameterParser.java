@@ -25,7 +25,6 @@ import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ConfigurationException;
 import org.mule.runtime.extension.api.declaration.type.annotation.FlattenedTypeAnnotation;
-import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.xml.dsl.api.DslElementSyntax;
 import org.mule.runtime.extension.xml.dsl.api.resolver.DslSyntaxResolver;
 import org.mule.runtime.module.extension.internal.config.dsl.ExtensionDefinitionParser;
@@ -126,13 +125,14 @@ public class ObjectTypeParameterParser extends ExtensionDefinitionParser {
           return;
         }
 
-        if (!parsingContext.isRegistered(name, namespace)) {
-          parsingContext.registerObjectType(name, namespace, type);
+        DslElementSyntax dsl = fieldDsl.get();
+        if (!parsingContext.isRegistered(dsl.getElementName(), dsl.getNamespace())) {
+          parsingContext.registerObjectType(dsl.getElementName(), dsl.getNamespace(), type);
           parseObjectParameter(fieldName, fieldName, objectType, defaultValue, expressionSupport, false, acceptsReferences,
-                               fieldDsl.get(), emptySet());
+                               dsl, emptySet());
         } else {
           parseObject(fieldName, fieldName, objectType, defaultValue, expressionSupport, false, acceptsReferences,
-                      fieldDsl.get(), emptySet());
+                      dsl, emptySet());
         }
       }
 

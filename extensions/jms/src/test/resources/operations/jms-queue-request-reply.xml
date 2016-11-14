@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:jmsn="http://www.mulesoft.org/schema/mule/jmsn"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+      http://www.mulesoft.org/schema/mule/jmsn http://www.mulesoft.org/schema/mule/jmsn/current/mule-jmsn.xsd">
+
+    <flow name="publisher">
+        <jmsn:publish config-ref="producer" destination="#[flowVars.replyToDestination]">
+            <jmsn:message-builder content="#[payload]"/>
+        </jmsn:publish>
+        <logger level="ERROR" message="Post publisher #[payload]"/>
+    </flow>
+
+    <flow name="request-reply">
+        <jmsn:request-reply config-ref="producer" destination="#[flowVars.requestDestination]">
+            <jmsn:message-builder content="#[payload]">
+                <jmsn:reply-to destination="#[flowVars.replyToDestination]"/>
+            </jmsn:message-builder>
+        </jmsn:request-reply>
+        <logger level="ERROR" message="Post request-reply #[payload]"/>
+    </flow>
+
+    <flow name="request-listener">
+        <jmsn:consume config-ref="consumer" destination="#[flowVars.requestDestination]"/>
+        <logger level="ERROR" message="Post consumer #[payload]"/>
+    </flow>
+
+</mule>
