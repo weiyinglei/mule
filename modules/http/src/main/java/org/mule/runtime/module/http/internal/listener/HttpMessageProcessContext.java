@@ -43,7 +43,7 @@ public class HttpMessageProcessContext implements MessageProcessContext {
   }
 
   @Override
-  public WorkManager getFlowExecutionWorkManager() {
+  public WorkManager getFlowExecutionExecutor() {
     return workManager;
   }
 
