@@ -21,7 +21,6 @@ import org.mule.runtime.module.deployment.api.StartupListener;
 import org.mule.runtime.deployment.model.api.application.Application;
 import org.mule.runtime.deployment.model.api.domain.Domain;
 import org.mule.runtime.module.deployment.internal.application.DefaultApplicationFactory;
-import org.mule.runtime.module.deployment.internal.artifact.DeploymentMuleContextListenerFactory;
 import org.mule.runtime.module.deployment.internal.artifact.ArtifactFactory;
 import org.mule.runtime.module.deployment.internal.domain.DefaultDomainFactory;
 import org.mule.runtime.module.deployment.internal.domain.DomainFactory;

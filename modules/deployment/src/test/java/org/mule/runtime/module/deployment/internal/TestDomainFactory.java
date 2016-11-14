@@ -4,13 +4,16 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.deployment.internal.domain;
+package org.mule.runtime.module.deployment.internal;
 
 import org.mule.runtime.deployment.model.api.domain.Domain;
 import org.mule.runtime.deployment.model.api.domain.DomainDescriptor;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
 import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 import org.mule.runtime.module.artifact.classloader.DeployableArtifactClassLoaderFactory;
+import org.mule.runtime.module.deployment.internal.domain.DefaultDomainFactory;
+import org.mule.runtime.module.deployment.internal.domain.DefaultDomainManager;
+import org.mule.runtime.module.deployment.internal.domain.TestDomainWrapper;
 import org.mule.runtime.module.service.ServiceRepository;
 
 import java.io.File;

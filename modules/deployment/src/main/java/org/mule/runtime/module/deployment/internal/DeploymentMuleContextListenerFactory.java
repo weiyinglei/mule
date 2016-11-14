@@ -5,11 +5,10 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.module.deployment.internal.artifact;
+package org.mule.runtime.module.deployment.internal;
 
 import org.mule.runtime.core.api.context.notification.MuleContextListener;
 import org.mule.runtime.module.deployment.api.DeploymentListener;
-import org.mule.runtime.module.deployment.internal.artifact.MuleContextDeploymentListener;
 import org.mule.runtime.module.deployment.internal.artifact.MuleContextListenerFactory;
 
 public class DeploymentMuleContextListenerFactory implements MuleContextListenerFactory {

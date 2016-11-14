@@ -94,7 +94,6 @@ import org.mule.runtime.module.deployment.internal.builder.ArtifactPluginFileBui
 import org.mule.runtime.module.deployment.internal.builder.DomainFileBuilder;
 import org.mule.runtime.module.deployment.internal.domain.DefaultDomainManager;
 import org.mule.runtime.module.deployment.internal.domain.DefaultMuleDomain;
-import org.mule.runtime.module.deployment.internal.domain.TestDomainFactory;
 import org.mule.runtime.module.service.ServiceManager;
 import org.mule.runtime.module.service.builder.ServiceFileBuilder;
 import org.mule.tck.junit4.AbstractMuleTestCase;
@@ -2294,6 +2293,7 @@ public class DeploymentServiceTestCase extends AbstractMuleTestCase {
     TestDomainFactory testDomainFactory =
         new TestDomainFactory(new DomainClassLoaderFactory(getClass().getClassLoader()),
                               containerClassLoader, artifactClassLoaderManager, serviceManager);
+    testDomainFactory.setMuleContextListenerFactory(new DeploymentMuleContextListenerFactory(domainDeploymentListener));
     testDomainFactory.setFailOnStopApplication();
 
     deploymentService.setDomainFactory(testDomainFactory);
@@ -2315,6 +2315,7 @@ public class DeploymentServiceTestCase extends AbstractMuleTestCase {
     TestDomainFactory testDomainFactory =
         new TestDomainFactory(new DomainClassLoaderFactory(getClass().getClassLoader()),
                               containerClassLoader, artifactClassLoaderManager, serviceManager);
+    testDomainFactory.setMuleContextListenerFactory(new DeploymentMuleContextListenerFactory(domainDeploymentListener));
     testDomainFactory.setFailOnDisposeApplication();
     deploymentService.setDomainFactory(testDomainFactory);
     startDeployment();
