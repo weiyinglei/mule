@@ -139,9 +139,12 @@ public abstract class TemplateOnErrorHandler extends AbstractExceptionListener
   }
 
   private void processStatistics() {
-    FlowConstructStatistics statistics = flowConstruct.getStatistics();
-    if (statistics != null && statistics.isEnabled()) {
-      statistics.incExecutionError();
+    //TODO fix
+    if (flowConstruct != null) {
+      FlowConstructStatistics statistics = flowConstruct.getStatistics();
+      if (statistics != null && statistics.isEnabled()) {
+        statistics.incExecutionError();
+      }
     }
   }
 

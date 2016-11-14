@@ -9,9 +9,11 @@ package org.mule.functional.functional;
 import static org.junit.Assert.fail;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.Event;
+import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.construct.FlowConstructAware;
 import org.mule.runtime.core.api.construct.MessageProcessorPathResolver;
+import org.mule.runtime.core.api.context.MuleContextAware;
 import org.mule.runtime.core.api.el.ExpressionManager;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.lifecycle.Startable;
@@ -21,13 +23,14 @@ import org.mule.tck.junit4.AbstractMuleContextTestCase;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class AssertionMessageProcessor implements Processor, FlowConstructAware, Startable {
+public class AssertionMessageProcessor implements Processor, FlowConstructAware, MuleContextAware, Startable {
 
   protected String expression = "#[true]";
   protected String message = "?";
   private int count = 1;
   private int invocationCount = 0;
   protected boolean needToMatchCount = false;
+  private MuleContext muleContext;
 
   public void setExpression(String expression) {
     this.expression = expression;
@@ -44,10 +47,13 @@ public class AssertionMessageProcessor implements Processor, FlowConstructAware,
 
   @Override
   public void start() throws InitialisationException {
-    this.expressionManager = flowConstruct.getMuleContext().getExpressionManager();
+    this.expressionManager = muleContext.getExpressionManager();
     this.expressionManager.validate(expression);
     latch = new CountDownLatch(count);
-    FlowAssert.addAssertion(flowConstruct.getName(), this);
+    // TODO fix
+    if (flowConstruct != null) {
+      FlowAssert.addAssertion(flowConstruct.getName(), this);
+    }
   }
 
   @Override
@@ -134,5 +140,10 @@ public class AssertionMessageProcessor implements Processor, FlowConstructAware,
     } else {
       return countReached;
     }
+  }
+
+  @Override
+  public void setMuleContext(MuleContext context) {
+    this.muleContext = context;
   }
 }

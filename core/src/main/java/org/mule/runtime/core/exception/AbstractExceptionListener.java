@@ -333,13 +333,17 @@ public abstract class AbstractExceptionListener extends AbstractMessageProcessor
 
   void processOutboundRouterStatistics() {
     List<Processor> processors = getMessageProcessors();
-    FlowConstructStatistics statistics = flowConstruct.getStatistics();
-    if (isNotEmpty(processors) && statistics instanceof ServiceStatistics) {
-      if (statistics.isEnabled()) {
-        for (Processor endpoint : processors) {
-          ((ServiceStatistics) statistics).getOutboundRouterStat().incrementRoutedMessage(endpoint);
+    //TODO fix
+    if (flowConstruct != null) {
+      FlowConstructStatistics statistics = flowConstruct.getStatistics();
+      if (isNotEmpty(processors) && statistics instanceof ServiceStatistics) {
+        if (statistics.isEnabled()) {
+          for (Processor endpoint : processors) {
+            ((ServiceStatistics) statistics).getOutboundRouterStat().incrementRoutedMessage(endpoint);
+          }
         }
       }
+
     }
   }
 

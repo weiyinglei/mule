@@ -35,6 +35,7 @@ import org.mule.runtime.core.connector.DefaultReplyToHandler;
 import org.mule.runtime.core.context.notification.DefaultFlowCallStack;
 import org.mule.runtime.core.metadata.DefaultTypedValue;
 import org.mule.runtime.core.processor.strategy.NonBlockingProcessingStrategyFactory.NonBlockingProcessingStrategy;
+import org.mule.runtime.core.policy.OperationPolicyInstance;
 import org.mule.runtime.core.session.DefaultMuleSession;
 import org.mule.runtime.core.transaction.TransactionCoordination;
 import org.mule.runtime.core.util.CopyOnWriteCaseInsensitiveMap;
@@ -44,7 +45,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -74,6 +77,8 @@ public class DefaultEventBuilder implements Event.Builder {
   private Event originalEvent;
   private boolean modified;
   private boolean notificationsEnabled = true;
+  private OperationPolicyInstance operationPolicyInstance;
+  private List<OperationPolicyInstance> policyInstances = new ArrayList<>();
 
   public DefaultEventBuilder(EventContext messageContext) {
     this.context = messageContext;
@@ -243,7 +248,7 @@ public class DefaultEventBuilder implements Event.Builder {
                                          : synchronous,
                                      replyToDestination,
                                      replyToHandler, flowCallStack, groupCorrelation, error, legacyCorrelationId,
-                                     notificationsEnabled);
+                                     notificationsEnabled, policyInstances);
     }
   }
 
@@ -278,6 +283,7 @@ public class DefaultEventBuilder implements Event.Builder {
     /** Immutable MuleEvent state **/
 
     private final EventContext context;
+    private final List<OperationPolicyInstance> policyInstances;
     // TODO MULE-10013 make this final
     private InternalMessage message;
     private final MuleSession session;
@@ -306,7 +312,8 @@ public class DefaultEventBuilder implements Event.Builder {
                                 MessageExchangePattern exchangePattern, FlowConstruct flowConstruct, MuleSession session,
                                 boolean transacted, boolean synchronous, Object replyToDestination, ReplyToHandler replyToHandler,
                                 FlowCallStack flowCallStack, GroupCorrelation groupCorrelation, Error error,
-                                String legacyCorrelationId, boolean notificationsEnabled) {
+                                String legacyCorrelationId, boolean notificationsEnabled,
+                                List<OperationPolicyInstance> policyInstances) {
       this.context = context;
       this.flowConstruct = flowConstruct;
       this.session = session;
@@ -326,6 +333,7 @@ public class DefaultEventBuilder implements Event.Builder {
       this.legacyCorrelationId = legacyCorrelationId;
 
       this.notificationsEnabled = notificationsEnabled;
+      this.policyInstances = policyInstances;
     }
 
     @Override
@@ -466,6 +474,10 @@ public class DefaultEventBuilder implements Event.Builder {
       if (context.getOriginatingFlowName() != null) {
         flowConstruct = muleContext.getRegistry().lookupFlowConstruct(context.getOriginatingFlowName());
       }
+    }
+
+    public List<OperationPolicyInstance> getPolicyInstances() {
+      return policyInstances;
     }
 
     @Override

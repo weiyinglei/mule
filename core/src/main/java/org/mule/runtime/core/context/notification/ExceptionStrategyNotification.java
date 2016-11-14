@@ -24,6 +24,9 @@ public class ExceptionStrategyNotification extends ServerNotification {
 
   public ExceptionStrategyNotification(Event event, FlowConstruct flowConstruct, int action) {
     super(event, action);
-    resourceIdentifier = flowConstruct.getName();
+    //TODO fix.
+    if (flowConstruct != null) {
+      resourceIdentifier = flowConstruct.getName();
+    }
   }
 }
