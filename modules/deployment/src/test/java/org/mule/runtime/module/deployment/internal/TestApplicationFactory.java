@@ -15,14 +15,14 @@ import org.mule.runtime.deployment.model.internal.artifact.DefaultDependenciesPr
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoaderFilterFactory;
 import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 import org.mule.runtime.module.artifact.classloader.TrackingArtifactClassLoaderFactory;
-import org.mule.runtime.module.deployment.internal.application.ApplicationClassLoaderBuilderFactory;
-import org.mule.runtime.module.deployment.internal.application.ApplicationDescriptorFactory;
-import org.mule.runtime.module.deployment.internal.application.DefaultApplicationFactory;
-import org.mule.runtime.module.deployment.internal.application.TestApplicationWrapper;
-import org.mule.runtime.module.deployment.internal.domain.DomainManager;
-import org.mule.runtime.module.deployment.internal.domain.DomainRepository;
-import org.mule.runtime.module.deployment.internal.plugin.ArtifactPluginDescriptorFactory;
-import org.mule.runtime.module.deployment.internal.plugin.ArtifactPluginDescriptorLoader;
+import org.mule.runtime.module.deployment.impl.internal.application.ApplicationClassLoaderBuilderFactory;
+import org.mule.runtime.module.deployment.impl.internal.application.ApplicationDescriptorFactory;
+import org.mule.runtime.module.deployment.impl.internal.application.DefaultApplicationFactory;
+import org.mule.runtime.module.deployment.impl.internal.application.TestApplicationWrapper;
+import org.mule.runtime.module.deployment.impl.internal.domain.DomainManager;
+import org.mule.runtime.module.deployment.impl.internal.domain.DomainRepository;
+import org.mule.runtime.module.deployment.impl.internal.plugin.ArtifactPluginDescriptorFactory;
+import org.mule.runtime.module.deployment.impl.internal.plugin.ArtifactPluginDescriptorLoader;
 import org.mule.runtime.module.service.ServiceRepository;
 
 import java.io.File;

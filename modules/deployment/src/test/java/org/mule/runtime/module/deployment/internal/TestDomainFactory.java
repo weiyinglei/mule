@@ -11,9 +11,9 @@ import org.mule.runtime.deployment.model.api.domain.DomainDescriptor;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
 import org.mule.runtime.module.artifact.classloader.ClassLoaderRepository;
 import org.mule.runtime.module.artifact.classloader.DeployableArtifactClassLoaderFactory;
-import org.mule.runtime.module.deployment.internal.domain.DefaultDomainFactory;
-import org.mule.runtime.module.deployment.internal.domain.DefaultDomainManager;
-import org.mule.runtime.module.deployment.internal.domain.TestDomainWrapper;
+import org.mule.runtime.module.deployment.impl.internal.domain.DefaultDomainFactory;
+import org.mule.runtime.module.deployment.impl.internal.domain.DefaultDomainManager;
+import org.mule.runtime.module.deployment.impl.internal.domain.TestDomainWrapper;
 import org.mule.runtime.module.service.ServiceRepository;
 
 import java.io.File;

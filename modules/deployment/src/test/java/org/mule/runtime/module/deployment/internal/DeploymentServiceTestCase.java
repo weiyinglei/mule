@@ -59,7 +59,7 @@ import static org.mule.runtime.module.artifact.classloader.DefaultArtifactClassL
 import static org.mule.runtime.module.artifact.classloader.DefaultArtifactClassLoaderFilter.EXPORTED_RESOURCE_PROPERTY;
 import static org.mule.runtime.module.deployment.internal.DeploymentDirectoryWatcher.CHANGE_CHECK_INTERVAL_PROPERTY;
 import static org.mule.runtime.module.deployment.internal.MuleDeploymentService.PARALLEL_DEPLOYMENT_PROPERTY;
-import static org.mule.runtime.module.deployment.internal.application.PropertiesDescriptorParser.PROPERTY_DOMAIN;
+import static org.mule.runtime.module.deployment.impl.internal.application.PropertiesDescriptorParser.PROPERTY_DOMAIN;
 import static org.mule.runtime.module.deployment.internal.TestApplicationFactory.createTestApplicationFactory;
 import static org.mule.runtime.module.service.ServiceDescriptorFactory.SERVICE_PROVIDER_CLASS_NAME;
 import static org.mule.tck.junit4.AbstractMuleContextTestCase.TEST_MESSAGE;
@@ -89,11 +89,11 @@ import org.mule.runtime.deployment.model.internal.nativelib.DefaultNativeLibrary
 import org.mule.runtime.module.artifact.builder.TestArtifactDescriptor;
 import org.mule.runtime.module.artifact.classloader.ArtifactClassLoader;
 import org.mule.runtime.module.deployment.api.DeploymentListener;
-import org.mule.runtime.module.deployment.internal.builder.ApplicationFileBuilder;
-import org.mule.runtime.module.deployment.internal.builder.ArtifactPluginFileBuilder;
-import org.mule.runtime.module.deployment.internal.builder.DomainFileBuilder;
-import org.mule.runtime.module.deployment.internal.domain.DefaultDomainManager;
-import org.mule.runtime.module.deployment.internal.domain.DefaultMuleDomain;
+import org.mule.runtime.module.deployment.impl.internal.builder.ApplicationFileBuilder;
+import org.mule.runtime.module.deployment.impl.internal.builder.ArtifactPluginFileBuilder;
+import org.mule.runtime.module.deployment.impl.internal.builder.DomainFileBuilder;
+import org.mule.runtime.module.deployment.impl.internal.domain.DefaultDomainManager;
+import org.mule.runtime.module.deployment.impl.internal.domain.DefaultMuleDomain;
 import org.mule.runtime.module.service.ServiceManager;
 import org.mule.runtime.module.service.builder.ServiceFileBuilder;
 import org.mule.tck.junit4.AbstractMuleTestCase;
